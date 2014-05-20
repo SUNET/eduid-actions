@@ -1,0 +1,17 @@
+.coverage
+.tox
+__pycache__
+*.egg
+*.egg-info
+*.pyc
+.*.swp
+bin/
+lib/
+include/
+build/
+dist/
+sessions/
+nosetests.xml
+coverage.xml
+/development.ini
+.idea
