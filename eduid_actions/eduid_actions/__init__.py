@@ -61,11 +61,9 @@ def includeme(config):
     config.set_request_property(lambda x: x.registry.settings['mongodb'].get_database(), 'db', reify=True)
 
     config.add_route('home', '/')
-    config.add_view('eduid_actions.views.home', route_name='home', renderer='main.jinja2')
 
     # Favicon
     config.add_route('favicon', '/favicon.ico')
-    config.add_view('eduid_actions.views.favicon_view', route_name='favicon')
 
     # Plugin registry
     settings['action_plugins'] = PluginsRegistry('eduid_actions.action')
@@ -135,12 +133,11 @@ def main(global_config, **settings):
                                         'eduid_actions:locale')
     config.add_translation_dirs(locale_path)
 
-    config.include('pyramid_jinja2')
-
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('set_language', '/set_language/')
 
     # eudid specific configuration
     includeme(config)
+    config.scan(ignore=[re.compile('.*tests.*').search, '.testing'])
 
     return config.make_wsgi_app()

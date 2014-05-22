@@ -13,7 +13,7 @@ def favicon_view(context, request):
     return FileResponse(icon, request=request)
 
 
-@view_config(route_name='home', renderer='templates/main.jinja2')
+@view_config(route_name='home', renderer='main.jinja2')
 def home(request):
     '''
     '''
