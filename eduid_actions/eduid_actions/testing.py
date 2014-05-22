@@ -7,6 +7,22 @@ from pyramid.testing import DummyRequest
 
 from eduid_am.testing import MongoTemporaryInstance
 from eduid_actions import main
+from eduid_actions.action_abc import ActionPlugin
+
+
+class DummyActionPlugin(ActionPlugin):
+
+    def get_number_of_steps(self):
+        return 1
+
+    def get_action_body_for_step(self, step_number, request):
+        return u'Dummy action'
+
+    def perform_action(self, request):
+        if request.session.get('success', False):
+            return
+        else:
+            raise self.ActionError(u'Dummy failure')
 
 
 class FunctionalTestCase(unittest.TestCase):
