@@ -4,6 +4,7 @@ import re
 import logging
 
 from pkg_resources import resource_filename
+from pkg_resources import iter_entry_points
 
 from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationError
@@ -16,6 +17,17 @@ from eduid_actions.i18n import locale_negotiator
 
 
 log = logging.getLogger('eduid_actions')
+
+
+class PluginsRegistry(dict):
+
+    def __init__(self, name):
+        for entry_point in iter_entry_points(name):
+            if entry_point.name in self:
+                log.warn("Duplicate entry point: %s" % entry_point.name)
+            else:
+                log.debug("Registering entry point: %s" % entry_point.name)
+                self[entry_point.name] = entry_point.load()
 
 
 def jinja2_settings(settings):
@@ -54,6 +66,9 @@ def includeme(config):
     # Favicon
     config.add_route('favicon', '/favicon.ico')
     config.add_view('eduid_actions.views.favicon_view', route_name='favicon')
+
+    # Plugin registry
+    settings['action_plugins'] = PluginsRegistry('eduid_actions.action')
 
 
 def main(global_config, **settings):
