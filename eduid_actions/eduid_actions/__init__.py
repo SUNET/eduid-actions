@@ -8,6 +8,7 @@ from pkg_resources import resource_filename
 from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationError
 from pyramid.i18n import get_locale_name
+from pyramid_beaker import session_factory_from_settings
 
 from eduid_am.db import MongoDB
 from eduid_am.config import read_setting_from_env, read_mapping, read_list
@@ -108,8 +109,10 @@ def main(global_config, **settings):
 
     jinja2_settings(settings)
 
+    session_factory = session_factory_from_settings(settings)
     config = Configurator(settings=settings,
                           locale_negotiator=locale_negotiator)
+    config.set_session_factory(session_factory)
 
     config.set_request_property(get_locale_name, 'locale', reify=True)
 
