@@ -1,17 +1,9 @@
-import unittest
-
-from pyramid import testing
+from eduid_actions.testing import FunctionalTestCase
 
 
-class ViewTests(unittest.TestCase):
-    def setUp(self):
-        self.config = testing.setUp()
+class HomeViewTests(FunctionalTestCase):
 
-    def tearDown(self):
-        testing.tearDown()
-
-    def test_my_view(self):
-        from .views import my_view
-        request = testing.DummyRequest()
-        info = my_view(request)
-        self.assertEqual(info['project'], 'eduid_actions')
+    def test_home(self):
+        res = self.testapp.get('/')
+        self.assertEqual(res.status, '200 OK')
+        self.assertIn('Home', res.body)
