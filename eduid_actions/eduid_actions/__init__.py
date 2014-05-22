@@ -65,6 +65,9 @@ def includeme(config):
     # Favicon
     config.add_route('favicon', '/favicon.ico')
 
+    config.add_route('actions', '/actions')
+    config.add_route('perform-action', '/perform-action')
+
     # Plugin registry
     settings['action_plugins'] = PluginsRegistry('eduid_actions.action')
 

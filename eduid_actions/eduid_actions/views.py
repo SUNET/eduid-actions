@@ -2,8 +2,13 @@ import os.path
 
 from pyramid.view import view_config
 from pyramid.response import FileResponse
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.settings import asbool
+
+from eduid_actions.auth import verify_auth_token
+
+import logging
+logger = logging.getLogger('eduid_actions')
 
 
 @view_config(name='favicon.ico')
@@ -47,3 +52,32 @@ def set_language(context, request):
     response.set_cookie(cookie_name, value=lang, **extra_options)
 
     return response
+
+
+@view_config(route_name='actions', renderer='main.jinja2')
+def actions(request):
+    '''
+    '''
+    userid = request.GET.get('userid')
+    token = request.GET.get('token')
+    nonce = request.GET.get('nonce')
+    timestamp = request.GET.get('ts')
+    shared_key = request.registry.settings.get('auth_shared_secret')
+
+    if verify_auth_token(shared_key, userid, token, nonce, timestamp):
+        request.session['userid'] = userid
+        remember_headers = remember(request, userid)
+        request.session['next-action'] = action
+
+        return HTTPFound(location='/perform-action/', headers=remember_headers)
+    else:
+        logger.info("Token authentication failed (userid: {!r})".format(userid))
+        # Show and error, the user can't be logged
+        return HTTPBadRequest()
+
+
+@view_config(route_name='perform-action')
+class PerformAction(object):
+    '''
+    XXX work in progress
+    '''
