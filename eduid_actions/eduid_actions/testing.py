@@ -2,11 +2,13 @@ __author__ = 'eperez'
 
 import unittest
 from webtest import TestApp, TestRequest
+from mock import patch
 import pymongo
 from pyramid.testing import DummyRequest
 
 from eduid_am.testing import MongoTemporaryInstance
 from eduid_actions import main
+from eduid_actions import views
 from eduid_actions.action_abc import ActionPlugin
 
 
@@ -15,14 +17,22 @@ class DummyActionPlugin(ActionPlugin):
     def get_number_of_steps(self):
         return 1
 
-    def get_action_body_for_step(self, step_number, request):
-        return u'Dummy action'
-
-    def perform_action(self, request):
-        if request.session.get('success', False):
-            return
+    def get_action_body_for_step(self, step_number, action, request):
+        if action['params'].get('body_failure', False):
+            raise self.ActionError(u'Body failure')
         else:
-            raise self.ActionError(u'Dummy failure')
+            return u'''
+                       <h1>Dummy action</h1>
+                       <form id="dummy" method="POST" action="#">
+                           <input type="submit" value="submit">
+                       </form>'''
+
+
+    def perform_action(self, action, request):
+        if action['params'].get('perform_failure', False):
+            raise self.ActionError(u'Perform failure')
+        else:
+            return
 
 
 class FunctionalTestCase(unittest.TestCase):
@@ -54,6 +64,10 @@ class FunctionalTestCase(unittest.TestCase):
             'auth_shared_secret': '123123',
             'session.cookie_expires': '3600',
             'testing': True,
+            'pyramid.includes': '''
+                pyramid_jinja2
+                pyramid_beaker
+                ''',
             'jinja2.directories': 'eduid_actions:templates',
             'jinja2.undefined': 'strict',
             'jinja2.i18n.domain': 'eduid_actions',
@@ -62,10 +76,10 @@ class FunctionalTestCase(unittest.TestCase):
                 static_url = pyramid_jinja2.filters:static_url_filter
                 """,
             'cache.type': 'memory',
-            'cache.second.expire': 1,
-            'cache.short_term.expire': 1,
-            'cache.default_term.expire': 1,
-            'cache.long_term.expire': 1,
+            'cache.second.expire': '1',
+            'cache.short_term.expire': '1',
+            'cache.default_term.expire': '1',
+            'cache.long_term.expire': '1',
         }
 
         if getattr(self, 'settings', None) is None:
@@ -78,6 +92,11 @@ class FunctionalTestCase(unittest.TestCase):
             self.db = app.registry.settings['mongodb'].get_database()
         except pymongo.errors.ConnectionFailure:
             raise unittest.SkipTest("requires accessible MongoDB server")
+        dummy = DummyActionPlugin()
+        app.registry.settings['action_plugins']['dummy'] = lambda: dummy
+        mock_config = {'return_value': True}
+        self.patcher = patch.object(views, 'verify_auth_token', **mock_config)
+        self.patcher.start()
 
     def tearDown(self):
         super(FunctionalTestCase, self).tearDown()

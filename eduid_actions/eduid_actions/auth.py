@@ -33,7 +33,7 @@ def verify_auth_token(shared_key, userid, token, nonce, timestamp, generator=sha
     if (ts < now - 300) or (ts > now + 900):
         logger.debug("Auth token timestamp {!r} out of bounds ({!s} seconds from {!s})".format(
             timestamp, ts - now, now))
-        raise HTTPForbidden(_('Login token expired, please await confirmation e-mail to log in.'))
+        raise HTTPForbidden(_('Login token expired, please try to log in in the IdP again.'))
     # verify there is a long enough nonce
     if len(nonce) < 16:
         logger.debug("Auth token nonce {!r} too short".format(nonce))

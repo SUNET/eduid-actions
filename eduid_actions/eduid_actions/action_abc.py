@@ -37,18 +37,20 @@ class ActionPlugin:
         '''
 
     @abstractmethod
-    def get_action_body_for_step(self, step_number, request):
+    def get_action_body_for_step(self, step_number, action, request):
         '''
         Return the html form that corresponds to step number
         `step_number`. If there is some error in the process,
         raise ActionError.
 
         :param step_number: the step number
+        :param action: the action as retrieved from the eduid_actions db
         :param request: the request
         :returns: the html to be presented to the user for the next step
         :raise: ActionPlugin.ActionError
 
         :type step_number: int
+        :type action: dict
         :type request: pyramid.request.Request
         :rtype: unicode
 
@@ -56,7 +58,7 @@ class ActionPlugin:
         '''
 
     @abstractmethod
-    def perform_action(self, request):
+    def perform_action(self, action, request):
         '''
         Once the user has completed all steps required to
         perform this action, we should have all neccesary
@@ -66,6 +68,9 @@ class ActionPlugin:
         If we succeed we return None, and raise ActionError otherwise.
 
         :param request: the request
+        :param action: the action as retrieved from the eduid_actions db
+
         :type request: pyramid.request.Request
+        :type action: dict
         :raise: ActionPlugin.ActionError
         '''
