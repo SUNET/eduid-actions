@@ -92,8 +92,8 @@ class FunctionalTestCase(unittest.TestCase):
             self.db = app.registry.settings['mongodb'].get_database()
         except pymongo.errors.ConnectionFailure:
             raise unittest.SkipTest("requires accessible MongoDB server")
-        dummy = DummyActionPlugin()
-        app.registry.settings['action_plugins']['dummy'] = lambda: dummy
+        dummy = lambda settings: DummyActionPlugin(settings)
+        app.registry.settings['action_plugins']['dummy'] = dummy
         mock_config = {'return_value': True}
         self.patcher = patch.object(views, 'verify_auth_token', **mock_config)
         self.patcher.start()

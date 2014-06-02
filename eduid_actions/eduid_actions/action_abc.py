@@ -5,6 +5,9 @@ from abc import ABCMeta, abstractmethod
 class ActionPlugin:
     __metaclass__ = ABCMeta
 
+    def __init__(self, settings):
+        self.settings = settings
+
     class ActionError(Exception):
         '''
         exception to be raised if the action to be performed fails,

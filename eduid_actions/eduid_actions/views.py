@@ -150,6 +150,6 @@ class PerformAction(object):
             raise HTTPBadRequest()
         session['current_action'] = action
         session['current_step'] = 1
-        plugin_obj = settings['action_plugins'][name]()
+        plugin_obj = settings['action_plugins'][name](settings)
         session['current_plugin'] = plugin_obj
         session['total_steps'] = plugin_obj.get_number_of_steps()
