@@ -7,6 +7,19 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 
+try:
+    from babel.messages import frontend as babel
+except ImportError:
+    print "Babel is not installed, you can't localize this package"
+    cmdclass = {}
+else:
+    cmdclass = { 
+        'compile_catalog': babel.compile_catalog,
+        'extract_messages': babel.extract_messages,
+        'init_catalog': babel.init_catalog,
+        'update_catalog': babel.update_catalog
+    }
+
 version = '0.0.1-dev'
 
 requires = [
@@ -22,6 +35,7 @@ requires = [
 if sys.version_info[0] < 3:
     # Babel does not work with Python 3
     requires.append('Babel==1.3')
+    requires.append('lingua==1.5')
 
 
 test_requires = [ 
@@ -57,6 +71,7 @@ setup(name='eduid_actions',
       zip_safe=False,
       install_requires=requires,
       tests_require=test_requires,
+      cmdclass=cmdclass,
       extras_require={
           'docs': docs_extras,
           'testing': testing_extras,
