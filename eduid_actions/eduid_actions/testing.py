@@ -14,6 +14,12 @@ from eduid_actions.action_abc import ActionPlugin
 
 class DummyActionPlugin(ActionPlugin):
 
+    translations = {}
+
+    @classmethod
+    def get_translations(cls):
+        return cls.translations
+
     def get_number_of_steps(self):
         return 1
 
@@ -92,8 +98,7 @@ class FunctionalTestCase(unittest.TestCase):
             self.db = app.registry.settings['mongodb'].get_database()
         except pymongo.errors.ConnectionFailure:
             raise unittest.SkipTest("requires accessible MongoDB server")
-        dummy = lambda settings: DummyActionPlugin(settings)
-        app.registry.settings['action_plugins']['dummy'] = dummy
+        app.registry.settings['action_plugins']['dummy'] = DummyActionPlugin
         mock_config = {'return_value': True}
         self.patcher = patch.object(views, 'verify_auth_token', **mock_config)
         self.patcher.start()

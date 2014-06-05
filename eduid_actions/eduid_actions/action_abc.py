@@ -1,12 +1,92 @@
 
 from abc import ABCMeta, abstractmethod
+import gettext
 
 
 class ActionPlugin:
+    '''
+    Abstract class to be extended by the different plugins for the
+    eduid_actions app.
+    The derived classes in the plugins are set as the objects to which
+    the entry point ``eduid_actions.action`` in those plugins point at.
+
+    The packages for the plugins must have a name with the form
+    ``eduid_action.<name>``, where <name> must coincide with the key in
+    the entry point.
+    For example, if we have a plugin ``eduid_action.tou``,
+    that defines a class ``ToUPlugin`` (subclass of ``ActionPlugin``) in
+    its ``__init__.py``, we would have as entry point in its ``setup.py``::
+
+        
+      entry_points="""
+        [eduid_actions.action]
+            tou = eduid_action.tou:ToUPlugin
+      """,
+
+    '''
+
     __metaclass__ = ABCMeta
 
-    def __init__(self, settings):
-        self.settings = settings
+    @classmethod
+    @abstractmethod
+    def get_translations(cls):
+        '''
+        return a dictionary in which the keys are the codes for
+        the available languages, and the values are the gettext
+        translation instances. This dict may be a class attribute of
+        subclasses of ``ActionPlugin``.
+
+        The first time it is called, from within the ``init_languages``
+        classmethod of this same class, it will return an empty dict,
+        to be filled by that method.
+
+        :returns: the gettext translations
+        :rtype: dict
+        '''
+
+    @classmethod
+    def init_languages(cls, settings, locale_path):
+        '''
+        initialize the translations dictionary returned by
+        ``get_translations`` for the available languages in
+        ``settings`` and the provided locale_path.
+
+        :param settings: the settings object
+        :param locale_path: the path to the locales directory
+
+        :type settings: pyramid.config.settings.Settings
+        :type locale_path: str
+        '''
+        translations = cls.get_translations()
+        available_languages = settings['available_languages'].keys()
+        for lang in available_languages:
+            translations[lang] = gettext.translation('spam',
+                                                     locale_path,
+                                                     languages=[lang])
+
+    def get_language(self, request):
+        '''
+        get the language code that corresponds to the given request.
+
+        :param request: the request
+        :returns: the language code
+
+        :type request: pyramid.request.Request
+        :rtype: str
+        '''
+        settings = request.registry.settings
+        available_languages = settings['available_languages'].keys()
+        cookie_name = settings['lang_cookie_name']
+
+        cookie_lang = request.cookies.get(cookie_name, None)
+        if cookie_lang and cookie_lang in available_languages:
+            return cookie_lang
+
+        locale_name = request.accept_language.best_match(available_languages)
+
+        if locale_name not in available_languages:
+            locale_name = settings.get('default_locale_name', 'sv')
+        return locale_name
 
     class ActionError(Exception):
         '''

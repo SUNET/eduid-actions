@@ -21,13 +21,16 @@ log = logging.getLogger('eduid_actions')
 
 class PluginsRegistry(dict):
 
-    def __init__(self, name):
+    def __init__(self, name, settings):
         for entry_point in iter_entry_points(name):
             if entry_point.name in self:
                 log.warn("Duplicate entry point: %s" % entry_point.name)
             else:
                 log.debug("Registering entry point: %s" % entry_point.name)
                 self[entry_point.name] = entry_point.load()
+                package_name = 'eduid_action.' + entry_point.name
+                locale_path = resource_filename(package_name, 'locale')
+                self[entry_point.name].init_languages(settings, locale_path)
 
 
 def jinja2_settings(settings):
@@ -69,7 +72,8 @@ def includeme(config):
     config.add_route('perform-action', '/perform-action')
 
     # Plugin registry
-    settings['action_plugins'] = PluginsRegistry('eduid_actions.action')
+    settings['action_plugins'] = PluginsRegistry('eduid_actions.action',
+                                                 settings)
 
 
 def main(global_config, **settings):
