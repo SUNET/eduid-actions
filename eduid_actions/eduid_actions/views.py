@@ -108,7 +108,7 @@ class PerformAction(object):
                 plugin_obj.perform_action(action, self.request)
             except plugin_obj.ActionError as exc:
                 html = u'<h2>{0}</h2>'.format(exc.args[0])
-                return render_to_response('action-form.jinja2',
+                return render_to_response('main.jinja2',
                                           {'plugin_html': html},
                                           request=self.request)
             self.request.db.actions.find_and_modify(

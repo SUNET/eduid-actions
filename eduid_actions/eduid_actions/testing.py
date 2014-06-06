@@ -30,13 +30,16 @@ class DummyActionPlugin(ActionPlugin):
             return u'''
                        <h1>Dummy action</h1>
                        <form id="dummy" method="POST" action="#">
-                           <input type="submit" value="submit">
+                           <input type="submit" name="submit" value="submit">
+                           <input type="submit" name="reject" value="reject">
                        </form>'''
 
 
     def perform_action(self, action, request):
         if action['params'].get('perform_failure', False):
             raise self.ActionError(u'Perform failure')
+        elif request.POST.get('reject', False):
+            raise self.ActionError(u'Action not performed')
         else:
             return
 
