@@ -11,7 +11,21 @@ div#content-block {
 /* End no javascript
 -------------------------------------------------- */
 
+/* Header footer styles
+-------------------------------------------------- */
 
+.masthead {
+  padding-top: 10px;
+  padding-bottom: 5px;
+}
+
+.masthead img {
+  max-width: 108px;
+  max-height: 110px;
+}
+
+/* end header footer styles
+-------------------------------------------------- */
 
 /* Bottom footer styles
 -------------------------------------------------- */
