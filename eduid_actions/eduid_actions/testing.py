@@ -76,7 +76,7 @@ class FunctionalTestCase(unittest.TestCase):
                 ''',
             'jinja2.directories': 'eduid_actions:templates',
             'jinja2.undefined': 'strict',
-            'jinja2.i18n.domain': 'eduid_actions',
+            'jinja2.i18n.domain': 'eduid-actions',
             'jinja2.filters': """ 
                 route_url = pyramid_jinja2.filters:route_url_filter
                 static_url = pyramid_jinja2.filters:static_url_filter

@@ -26,6 +26,8 @@ class ActionTests(FunctionalTestCase):
 
     def test_action_success(self):
         self.db.actions.insert(DUMMY_ACTION)
+        # token verification is disabled in the setUp
+        # method of FunctionalTestCase
         url = ('/actions?userid=123467890123456789014567'
                 '&token=abc&nonce=sdf&ts=1401093117')
         res = self.testapp.get(url)

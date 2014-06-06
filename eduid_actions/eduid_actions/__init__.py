@@ -34,14 +34,13 @@ class PluginsRegistry(dict):
 
 
 def jinja2_settings(settings):
-    settings.setdefault('jinja2.i18n.domain', 'eduid_actions')
+    settings.setdefault('jinja2.i18n.domain', 'eduid-actions')
     settings.setdefault('jinja2.newstyle', True)
 
     settings.setdefault('jinja2.extensions', ['jinja2.ext.with_'])
 
     settings.setdefault('jinja2.directories', 'eduid_actions:templates')
     settings.setdefault('jinja2.undefined', 'strict')
-    settings.setdefault('jinja2.i18n.domain', 'eduid_actions')
     settings.setdefault('jinja2.filters', """
         route_url = pyramid_jinja2.filters:route_url_filter
         static_url = pyramid_jinja2.filters:static_url_filter
