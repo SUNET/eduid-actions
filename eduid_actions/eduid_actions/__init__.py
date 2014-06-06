@@ -62,12 +62,10 @@ def includeme(config):
 
     config.set_request_property(lambda x: x.registry.settings['mongodb'].get_database(), 'db', reify=True)
 
-    config.add_route('home', '/')
-
     # Favicon
     config.add_route('favicon', '/favicon.ico')
 
-    config.add_route('actions', '/actions')
+    config.add_route('actions', '/')
     config.add_route('perform-action', '/perform-action')
 
     # Plugin registry

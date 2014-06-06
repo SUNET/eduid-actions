@@ -20,15 +20,6 @@ def favicon_view(context, request):
     return FileResponse(icon, request=request)
 
 
-@view_config(route_name='home', renderer='main.jinja2')
-def home(request):
-    '''
-    '''
-    context = {'plugin_html': 'testing'}
-
-    return context
-
-
 @view_config(route_name='set_language', request_method='GET')
 def set_language(context, request):
     settings = request.registry.settings
@@ -38,7 +29,7 @@ def set_language(context, request):
 
     url = request.environ.get('HTTP_REFERER', None)
     if url is None:
-        url = request.route_path('home')
+        url = request.route_path('actions')
     response = HTTPFound(location=url)
 
     cookie_domain = settings.get('lang_cookie_domain', None)
