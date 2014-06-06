@@ -20,19 +20,19 @@ msgstr ""
 
 #: eduid_actions/auth.py:36
 msgid "Login token expired, please try to log in in the IdP again."
-msgstr "expired in sv"
+msgstr ""
 
 #: eduid_actions/auth.py:40 eduid_actions/auth.py:48
 msgid "Login token invalid"
-msgstr "invalid in sv"
+msgstr ""
 
 #: eduid_actions/templates/base.jinja2:6
 msgid "Sign up"
-msgstr "sign up in svenska"
+msgstr ""
 
 #: eduid_actions/templates/base.jinja2:21
 msgid "Home"
-msgstr "home in sv"
+msgstr ""
 
 #: eduid_actions/templates/base.jinja2:28
 msgid "This Site depends on Javascript, so please enable it."
