@@ -77,3 +77,25 @@ class ActionTests(FunctionalTestCase):
         res = form.submit('reject')
         self.assertIn('Action not performed', res.body)
         self.assertEqual(self.db.actions.find({}).count(), 1)
+
+    def test_insufficient_params(self):
+        self.db.actions.insert(DUMMY_ACTION)
+        # token verification is disabled in the setUp
+        # method of FunctionalTestCase
+        url = ('/?userid=123467890123456789014567'
+                '&token=abc&nonce=sdf')
+        res = self.testapp.get(url)
+        self.assertIn('Insufficient Params', res.body)
+        self.assertEqual(self.db.actions.find({}).count(), 1)
+
+    def test_no_actions(self):
+        url = ('/?userid=123467890123456789014567'
+                '&token=abc&nonce=sdf&ts=1401093117')
+        self.assertEqual(self.db.actions.find({}).count(), 0)
+        res = self.testapp.get(url)
+        self.assertEqual(res.status, '302 Found')
+        self.assertEqual(res.location, 'http://localhost/perform-action')
+        res = self.testapp.get(res.location)
+        self.assertEqual(res.status, '302 Found')
+        self.assertEqual(res.location, 'http://example.com/idp')
+        self.assertEqual(self.db.actions.find({}).count(), 0)

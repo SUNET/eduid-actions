@@ -89,6 +89,7 @@ class FunctionalTestCase(unittest.TestCase):
             'cache.short_term.expire': '1',
             'cache.default_term.expire': '1',
             'cache.long_term.expire': '1',
+            'idp_url': 'http://example.com/idp',
         }
 
         if getattr(self, 'settings', None) is None:
@@ -101,6 +102,7 @@ class FunctionalTestCase(unittest.TestCase):
             self.db = app.registry.settings['mongodb'].get_database()
         except pymongo.errors.ConnectionFailure:
             raise unittest.SkipTest("requires accessible MongoDB server")
+        self.db.actions.drop()
         app.registry.settings['action_plugins']['dummy'] = DummyActionPlugin
         mock_config = {'return_value': True}
         self.patcher = patch.object(views, 'verify_auth_token', **mock_config)
@@ -108,6 +110,7 @@ class FunctionalTestCase(unittest.TestCase):
 
     def tearDown(self):
         super(FunctionalTestCase, self).tearDown()
+        self.db.actions.drop()
         for db_name in self.conn.database_names():
             self.conn.drop_database(db_name)
         self.testapp.reset()

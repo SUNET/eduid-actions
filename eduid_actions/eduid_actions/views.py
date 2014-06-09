@@ -8,6 +8,7 @@ from pyramid.settings import asbool
 from pyramid.renderers import render_to_response
 
 from eduid_actions.auth import verify_auth_token
+from eduid_actions.i18n import TranslationString as _
 
 import logging
 logger = logging.getLogger('eduid_actions')
@@ -46,8 +47,6 @@ def set_language(context, request):
 
     return response
 
-#def verify_auth_token(*args):
-#    return True
 
 @view_config(route_name='actions', renderer='main.jinja2')
 def actions(request):
@@ -57,6 +56,12 @@ def actions(request):
     token = request.GET.get('token')
     nonce = request.GET.get('nonce')
     timestamp = request.GET.get('ts')
+    if not (userid and token and nonce and timestamp):
+        msg = _('Insufficient Params')
+        html = u'<h2>{0}</h2>'.format(msg)
+        return render_to_response('main.jinja2',
+                                  {'plugin_html': html},
+                                  request=request)
     shared_key = request.registry.settings.get('auth_shared_secret')
 
     if verify_auth_token(shared_key, userid, token, nonce, timestamp):
@@ -132,8 +137,8 @@ class PerformAction(object):
         settings = self.request.registry.settings
         userid = session['userid']
         actions = self.request.db.actions.find({'user_oid': ObjectId(userid)})
-        if not actions:
-            return HTTPFound(location=settings['idp_url'])
+        if not actions.count():
+            raise HTTPFound(location=settings['idp_url'])
         action = sorted(actions, key=lambda x: x['preference'])[-1]
         name = action['action']
         if name not in settings['action_plugins']:
