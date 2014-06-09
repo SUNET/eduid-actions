@@ -3,9 +3,13 @@ from bson import ObjectId
 
 from pyramid.view import view_config
 from pyramid.response import FileResponse
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.settings import asbool
 from pyramid.renderers import render_to_response
+
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPForbidden, HTTPBadRequest
+from pyramid.httpexceptions import HTTPMethodNotAllowed
+from pyramid.httpexceptions import HTTPInternalServerError
 
 from eduid_actions.auth import verify_auth_token
 from eduid_actions.i18n import TranslationString as _
@@ -48,7 +52,9 @@ def set_language(context, request):
     return response
 
 
-@view_config(route_name='actions', renderer='main.jinja2')
+@view_config(route_name='actions',
+             renderer='main.jinja2',
+             request_method='GET')
 def actions(request):
     '''
     '''
@@ -57,20 +63,19 @@ def actions(request):
     nonce = request.GET.get('nonce')
     timestamp = request.GET.get('ts')
     if not (userid and token and nonce and timestamp):
-        msg = _('Insufficient Params')
-        html = u'<h2>{0}</h2>'.format(msg)
-        return render_to_response('main.jinja2',
-                                  {'plugin_html': html},
-                                  request=request)
+        msg = _('Insufficient authentication params')
+        return HTTPBadRequest(msg)
     shared_key = request.registry.settings.get('auth_shared_secret')
 
     if verify_auth_token(shared_key, userid, token, nonce, timestamp):
         request.session['userid'] = userid
         return HTTPFound(location='/perform-action')
     else:
-        logger.info("Token authentication failed (userid: {!r})".format(userid))
+        logger.info("Token authentication failed (userid: {0})".format(userid))
         # Show and error, the user can't be logged
-        return HTTPBadRequest()
+        msg = _('Token authentication has failed, '
+                'you do not seem to come from a listed IdP')
+        return HTTPBadRequest(msg)
 
 
 @view_config(route_name='perform-action')
@@ -85,10 +90,12 @@ class PerformAction(object):
     def __call__(self):
         if self.request.session.get('userid', None) is None:
             logger.info("Unidentified user")
-            return HTTPBadRequest()
+            return HTTPForbidden()
         if self.request.method == 'GET':
             return self.get()
-        return self.post()
+        elif self.request.method == 'POST':
+            return self.post()
+        return HTTPMethodNotAllowed()
 
     def get(self):
         self.get_next_action()
@@ -140,12 +147,43 @@ class PerformAction(object):
         if not actions.count():
             raise HTTPFound(location=settings['idp_url'])
         action = sorted(actions, key=lambda x: x['preference'])[-1]
+        if not ('user_oid' in action and 'action' in action and
+                'preference' in action and 'params' in action):
+            logger.info("Malformed action {0}".format(str(action['_id'])))
+            raise HTTPInternalServerError()
         name = action['action']
         if name not in settings['action_plugins']:
             logger.info("Missing plugin for action {0}".format(name))
-            raise HTTPBadRequest()
+            raise HTTPInternalServerError()
         session['current_action'] = action
         session['current_step'] = 1
         plugin_obj = settings['action_plugins'][name]()
         session['current_plugin'] = plugin_obj
         session['total_steps'] = plugin_obj.get_number_of_steps()
+
+
+def exception_view(context, request):
+    logger.error("The error was: %s" % context, exc_info=(context))
+    request.response.status = 500 
+    return {}
+
+
+def not_found_view(context, request):
+    request.response.status = 404 
+    return {}
+
+
+def forbidden_view(context, request):
+    request.response.status = 403
+    return {}
+
+
+def bad_request_view(context, request):
+    request.response.status = 400
+    msg = context.args[0]
+    return {'msg': msg}
+
+
+def method_not_allowed_view(context, request):
+    request.response.status = 405
+    return {}

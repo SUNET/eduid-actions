@@ -1,0 +1,12 @@
+{% extends "templates/base.jinja2" %}
+
+{% block contents %}
+
+<div class="alert">{{ _("Method Not Allowed.") }}</div>
+
+{% trans %}
+  <p>Sorry, but you can only access this site with GET or POST requests.</p>
+  <p>Error code 405</p>
+{% endtrans %}
+
+{% endblock %}

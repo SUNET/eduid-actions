@@ -11,6 +11,11 @@ from pyramid.exceptions import ConfigurationError
 from pyramid.i18n import get_locale_name
 from pyramid_beaker import session_factory_from_settings
 
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPForbidden, HTTPBadRequest
+from pyramid.httpexceptions import HTTPMethodNotAllowed
+from pyramid.httpexceptions import HTTPInternalServerError
+
 from eduid_am.db import MongoDB
 from eduid_am.config import read_setting_from_env, read_mapping, read_list
 from eduid_actions.i18n import locale_negotiator
@@ -64,6 +69,30 @@ def includeme(config):
 
     # Favicon
     config.add_route('favicon', '/favicon.ico')
+    # Errors
+    config.add_route('error404', '/error404/')
+    config.add_view(context=HTTPNotFound,
+                    view='eduid_actions.views.not_found_view',
+                    renderer='error404.jinja2')
+    config.add_route('forbidden403', '/error403/')
+    config.add_view(context=HTTPForbidden,
+                    view='eduid_actions.views.forbidden_view',
+                    renderer='error403.jinja2')
+    config.add_route('badrequest400', '/error400/')
+    config.add_view(context=HTTPBadRequest,
+                    view='eduid_actions.views.bad_request_view',
+                    renderer='error400.jinja2')
+    config.add_route('notallowed405', '/error405/')
+    config.add_view(context=HTTPMethodNotAllowed,
+                    view='eduid_actions.views.method_not_allowed_view',
+                    renderer='error405.jinja2')
+    config.add_route('error500', '/error500/')
+    config.add_view(context=HTTPInternalServerError,
+                    view='eduid_actions.views.exception_view',
+                    renderer='error500.jinja2')
+    config.add_view(context=Exception,
+                    view='eduid_actions.views.exception_view',
+                    renderer='error500.jinja2')
 
     config.add_route('actions', '/')
     config.add_route('perform-action', '/perform-action')

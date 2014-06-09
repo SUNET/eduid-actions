@@ -1,10 +1,12 @@
 __author__ = 'eperez'
 
 import unittest
+from cookielib import Cookie
 from webtest import TestApp, TestRequest
 from mock import patch
 import pymongo
 from pyramid.testing import DummyRequest
+from pyramid.interfaces import ISessionFactory
 
 from eduid_am.testing import MongoTemporaryInstance
 from eduid_actions import main
@@ -71,7 +73,6 @@ class FunctionalTestCase(unittest.TestCase):
             'mongo_uri': mongo_uri,
             'site.name': 'Test Site',
             'auth_shared_secret': '123123',
-            'session.cookie_expires': '3600',
             'testing': True,
             'pyramid.includes': '''
                 pyramid_jinja2
@@ -84,11 +85,9 @@ class FunctionalTestCase(unittest.TestCase):
                 route_url = pyramid_jinja2.filters:route_url_filter
                 static_url = pyramid_jinja2.filters:static_url_filter
                 """,
-            'cache.type': 'memory',
-            'cache.second.expire': '1',
-            'cache.short_term.expire': '1',
-            'cache.default_term.expire': '1',
-            'cache.long_term.expire': '1',
+            'session.type': 'memory',
+            'session.key': 'session',
+            'session.secret': '123456',
             'idp_url': 'http://example.com/idp',
         }
 
@@ -104,7 +103,11 @@ class FunctionalTestCase(unittest.TestCase):
             raise unittest.SkipTest("requires accessible MongoDB server")
         self.db.actions.drop()
         app.registry.settings['action_plugins']['dummy'] = DummyActionPlugin
-        mock_config = {'return_value': True}
+        def mock_verify_auth_token(*args, **kwargs):
+            if args[1] == 'fail_verify':
+                return False
+            return True
+        mock_config = {'new_callable': lambda: mock_verify_auth_token}
         self.patcher = patch.object(views, 'verify_auth_token', **mock_config)
         self.patcher.start()
 
@@ -123,4 +126,7 @@ class FunctionalTestCase(unittest.TestCase):
         for key, value in data.items():
             session[key] = value
         session.persist()
-        self.testapp.cookies['beaker.session.id'] = session._sess.id
+        cookie = Cookie(name='beaker.session.id',
+                        value=session._sess.id,
+                        domain='localhost')
+        self.testapp.cookiejar.set_cookie(cookie)

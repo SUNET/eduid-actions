@@ -94,14 +94,26 @@ class ActionPlugin:
         either in `get_action_body_for_step`, or in `perform_action`.
         Instantiated with a message that informs about the reason for
         the failure.
+        The message should never carry any sensitive information, since
+        it will besent to the user.
 
-        Example code (obj is an action object, an instance of a class
-        that extends ActionPlugin, defined in a plugin)::
+        Example code, in the plugin::
+        
+          if test_some_condition(*args, **kwargs):
+              follow_success_code_path(*args2, **kwargs2)
+          else:
+              msg = _('Failure condition')
+              raise self.ActionError(msg)
+        
+        Example code, in the actions app (obj is an action object,
+        an instance of a class that extends ActionPlugin,
+        defined in a plugin)::
 
           try:
               obj.perform_action(request)
           except obj.ActionError as exc:
               failure_msg = exc.args[0]
+              # return a 200 Ok with the failure_msg
 
         :param arg: the reason for the failure
         :type arg: unicode

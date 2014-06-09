@@ -31,6 +31,21 @@ class ActionTests(FunctionalTestCase):
         res = form.submit('submit')
         self.assertEqual(self.db.actions.find({}).count(), 0)
 
+    def test_method_not_allowed(self):
+        url = ('/?userid=123467890123456789014567'
+                '&token=abc&nonce=sdf&ts=1401093117')
+        res = self.testapp.put(url, expect_errors=True)
+        self.assertEqual(res.status, '404 Not Found')
+        self.add_to_session({'userid': '123456'})
+        url = ('/perform-action')
+        res = self.testapp.put(url, expect_errors=True)
+        self.assertEqual(res.status, '405 Method Not Allowed')
+
+    def test_forbidden(self):
+        url = ('/perform-action')
+        res = self.testapp.get(url, expect_errors=True)
+        self.assertEqual(res.status, '403 Forbidden')
+
     def test_action_failure(self):
         fail_action = deepcopy(DUMMY_ACTION)
         fail_action['params']['body_failure'] = True
@@ -84,8 +99,20 @@ class ActionTests(FunctionalTestCase):
         # method of FunctionalTestCase
         url = ('/?userid=123467890123456789014567'
                 '&token=abc&nonce=sdf')
-        res = self.testapp.get(url)
-        self.assertIn('Insufficient Params', res.body)
+        res = self.testapp.get(url, expect_errors=True)
+        self.assertEqual(res.status, '400 Bad Request')
+        self.assertIn('Insufficient authentication params', res.body)
+        self.assertEqual(self.db.actions.find({}).count(), 1)
+
+    def test_fail_token_auth(self):
+        self.db.actions.insert(DUMMY_ACTION)
+        # token verification is disabled in the setUp
+        # method of FunctionalTestCase
+        url = ('/?userid=fail_verify'
+                '&token=abc&nonce=sdf&ts=1401093117')
+        res = self.testapp.get(url, expect_errors=True)
+        self.assertEqual(res.status, '400 Bad Request')
+        self.assertIn('Token authentication has failed', res.body)
         self.assertEqual(self.db.actions.find({}).count(), 1)
 
     def test_no_actions(self):
