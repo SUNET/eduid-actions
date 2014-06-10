@@ -36,9 +36,8 @@ class ActionTests(FunctionalTestCase):
                 '&token=abc&nonce=sdf&ts=1401093117')
         res = self.testapp.put(url, expect_errors=True)
         self.assertEqual(res.status, '404 Not Found')
-        self.add_to_session({'userid': '123456'})
-        url = ('/perform-action')
-        res = self.testapp.put(url, expect_errors=True)
+        res = self.testapp.get(url, expect_errors=True)
+        res = self.testapp.put(res.location, expect_errors=True)
         self.assertEqual(res.status, '405 Method Not Allowed')
 
     def test_forbidden(self):

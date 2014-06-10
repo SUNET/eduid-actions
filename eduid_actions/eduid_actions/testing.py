@@ -5,7 +5,7 @@ from cookielib import Cookie
 from webtest import TestApp, TestRequest
 from mock import patch
 import pymongo
-from pyramid.testing import DummyRequest
+from pyramid.testing import DummyRequest, DummyResource
 from pyramid.interfaces import ISessionFactory
 
 from eduid_am.testing import MongoTemporaryInstance
@@ -87,6 +87,7 @@ class FunctionalTestCase(unittest.TestCase):
                 """,
             'session.type': 'memory',
             'session.key': 'session',
+            'session.lock_dir':'/tmp',
             'session.secret': '123456',
             'idp_url': 'http://example.com/idp',
         }
@@ -117,16 +118,3 @@ class FunctionalTestCase(unittest.TestCase):
         for db_name in self.conn.database_names():
             self.conn.drop_database(db_name)
         self.testapp.reset()
-
-    def add_to_session(self, data):
-        queryUtility = self.testapp.app.registry.queryUtility
-        session_factory = queryUtility(ISessionFactory)
-        request = DummyRequest()
-        session = session_factory(request)
-        for key, value in data.items():
-            session[key] = value
-        session.persist()
-        cookie = Cookie(name='beaker.session.id',
-                        value=session._sess.id,
-                        domain='localhost')
-        self.testapp.cookiejar.set_cookie(cookie)
