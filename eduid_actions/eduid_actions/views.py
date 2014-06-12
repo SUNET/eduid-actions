@@ -68,6 +68,8 @@ def actions(request):
     shared_key = request.registry.settings.get('auth_shared_secret')
 
     if verify_auth_token(shared_key, userid, token, nonce, timestamp):
+        logger.info("Starting pre-login actions "
+                    "for userid: {0})".format(userid))
         request.session['userid'] = userid
         return HTTPFound(location='/perform-action')
     else:
@@ -102,10 +104,14 @@ class PerformAction(object):
         session = self.request.session
         plugin_obj = session['current_plugin']
         action = session['current_action']
+        logger.info('Starting pre-login action {0} '
+                    'for userid {1}'.format(action['action'],
+                                            session['userid']))
         try:
             html = plugin_obj.get_action_body_for_step(1, action,
                                                        self.request)
         except plugin_obj.ActionError as exc:
+            self._log_aborted(action, session, exc)
             html = u'<h2>{0}</h2>'.format(exc.args[0])
         return render_to_response('main.jinja2',
                                   {'plugin_html': html},
@@ -119,6 +125,7 @@ class PerformAction(object):
             try:
                 plugin_obj.perform_action(action, self.request)
             except plugin_obj.ActionError as exc:
+                self._log_aborted(action, session, exc)
                 html = u'<h2>{0}</h2>'.format(exc.args[0])
                 return render_to_response('main.jinja2',
                                           {'plugin_html': html},
@@ -126,6 +133,9 @@ class PerformAction(object):
             self.request.db.actions.find_and_modify(
                     {'_id': action['_id']},
                     remove=True)
+            logger.info('Finished pre-login action {0} '
+                        'for userid {1}'.format(action['action'],
+                                                session['userid']))
             return HTTPFound(location='/perform-action')
         next_step = session['current_step'] + 1
         session['current_step'] = next_step
@@ -134,6 +144,7 @@ class PerformAction(object):
                                                        action,
                                                        self.request)
         except plugin_obj.ActionError as exc:
+            self._log_aborted(action, session, exc)
             html = u'<h2>{0}</h2>'.format(exc.args[0])
         return render_to_response('main.jinja2',
                                   {'plugin_html': html},
@@ -145,6 +156,8 @@ class PerformAction(object):
         userid = session['userid']
         actions = self.request.db.actions.find({'user_oid': ObjectId(userid)})
         if not actions.count():
+            logger.info("Finished pre-login actions "
+                        "for userid: {0})".format(userid))
             raise HTTPFound(location=settings['idp_url'])
         action = sorted(actions, key=lambda x: x['preference'])[-1]
         if not ('user_oid' in action and 'action' in action and
@@ -160,6 +173,12 @@ class PerformAction(object):
         plugin_obj = settings['action_plugins'][name]()
         session['current_plugin'] = plugin_obj
         session['total_steps'] = plugin_obj.get_number_of_steps()
+
+    def _log_aborted(self, action, session, exc):
+        logger.info('Aborted pre-login action {0} for userid {1}, '
+                    'reason: {2}'.format(action['action'],
+                                         session['userid'],
+                                         exc.args[0]))
 
 
 def exception_view(context, request):
