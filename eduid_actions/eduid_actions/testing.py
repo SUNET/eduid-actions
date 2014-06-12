@@ -8,6 +8,7 @@ import pymongo
 from pyramid.testing import DummyRequest, DummyResource
 from pyramid.interfaces import ISessionFactory
 
+from eduid_am.db import MongoDB
 from eduid_am.testing import MongoTemporaryInstance
 from eduid_actions import main
 from eduid_actions import views
@@ -58,7 +59,10 @@ class FunctionalTestCase(unittest.TestCase):
 
     def setUp(self):
         super(FunctionalTestCase, self).setUp()
-        self.tmp_db = MongoTemporaryInstance.get_instance()
+        try:
+            self.tmp_db = MongoTemporaryInstance.get_instance()
+        except OSError:
+            raise unittest.SkipTest("requires accessible mongod executable")
         self.conn = self.tmp_db.conn
         self.port = self.tmp_db.port
 
@@ -101,9 +105,28 @@ class FunctionalTestCase(unittest.TestCase):
             self.testapp = TestApp(app)
             self.db = app.registry.settings['mongodb'].get_database()
         except pymongo.errors.ConnectionFailure:
-            raise unittest.SkipTest("requires accessible MongoDB server")
+            # The MongoTemporaryInstance from eduid_am only allows
+            # 10 connections, so if the test case has more than 9
+            # tests, we get a connection failure (one connection is
+            # spent in its __init__ method).
+            # For more than 9 tests, we must create another instance.
+            MongoTemporaryInstance._instance.shutdown()
+            MongoTemporaryInstance._instance = None
+            self.tmp_db = MongoTemporaryInstance.get_instance()
+            self.conn = self.tmp_db.conn
+            self.port = self.tmp_db.port
+            mongo_uri = 'mongodb://localhost:{0}/eduid_actions_test'
+            mongo_uri = mongo_uri.format(str(self.port))
+            self.settings['mongo_uri'] = mongo_uri
+            mongodb = MongoDB(db_uri=settings['mongo_uri'])
+            self.settings['mongodb'] = mongodb
+            self.settings['db_conn'] = mongodb.get_connection
+            app = main({}, **self.settings)
+            self.testapp = TestApp(app)
+            self.db = app.registry.settings['mongodb'].get_database()
         self.db.actions.drop()
         app.registry.settings['action_plugins']['dummy'] = DummyActionPlugin
+        app.registry.settings['action_plugins']['dummy2'] = DummyActionPlugin
         def mock_verify_auth_token(*args, **kwargs):
             if args[1] == 'fail_verify':
                 return False
