@@ -8,7 +8,6 @@ DUMMY_ACTION = {
         '_id': ObjectId('234567890123456789012301'),
         'user_oid': ObjectId('123467890123456789014567'),
         'action': 'dummy',
-        'session': 'xyz',
         'preference': 100, 
         'params': {
             }
@@ -153,4 +152,136 @@ class ActionTests(FunctionalTestCase):
         res = self.testapp.get(res.location)
         self.assertEqual(res.status, '302 Found')
         self.assertEqual(res.location, self.settings['idp_url'])
+        self.assertEqual(self.db.actions.find({}).count(), 0)
+
+    def test_action_success_with_session(self):
+        fail_action = deepcopy(DUMMY_ACTION)
+        fail_action['session'] = 'abcd'
+        self.db.actions.insert(fail_action)
+        # token verification is disabled in the setUp
+        # method of FunctionalTestCase
+        url = ('/?userid=123467890123456789014567&session=abcd&'
+                '&token=abc&nonce=sdf&ts=1401093117')
+        res = self.testapp.get(url)
+        self.assertEqual(res.status, '302 Found')
+        res = self.testapp.get(res.location)
+        form = res.forms['dummy']
+        self.assertEqual(self.db.actions.find({}).count(), 1)
+        res = form.submit('submit')
+        self.assertEqual(self.db.actions.find({}).count(), 0)
+        self.assertEqual(res.status, '302 Found')
+        self.assertEqual(res.location, 'http://localhost/perform-action')
+        res = self.testapp.get(res.location)
+        self.assertEqual(res.status, '302 Found')
+        self.assertEqual(res.location, self.settings['idp_url'])
+
+    def test_action_with_different_session(self):
+        fail_action = deepcopy(DUMMY_ACTION)
+        fail_action['session'] = 'abcd'
+        self.db.actions.insert(fail_action)
+        # token verification is disabled in the setUp
+        # method of FunctionalTestCase
+        url = ('/?userid=123467890123456789014567&session=xyzw&'
+                '&token=abc&nonce=sdf&ts=1401093117')
+        self.assertEqual(self.db.actions.find({}).count(), 1)
+        res = self.testapp.get(url)
+        self.assertEqual(res.status, '302 Found')
+        self.assertEqual(res.location, 'http://localhost/perform-action')
+        res = self.testapp.get(res.location)
+        self.assertEqual(res.status, '302 Found')
+        self.assertEqual(res.location, self.settings['idp_url'])
+        self.assertEqual(self.db.actions.find({}).count(), 1)
+
+    def test_action_with_no_session_in_url(self):
+        fail_action = deepcopy(DUMMY_ACTION)
+        fail_action['session'] = 'abcd'
+        self.db.actions.insert(fail_action)
+        # token verification is disabled in the setUp
+        # method of FunctionalTestCase
+        url = ('/?userid=123467890123456789014567&'
+                '&token=abc&nonce=sdf&ts=1401093117')
+        self.assertEqual(self.db.actions.find({}).count(), 1)
+        res = self.testapp.get(url)
+        self.assertEqual(res.status, '302 Found')
+        self.assertEqual(res.location, 'http://localhost/perform-action')
+        res = self.testapp.get(res.location)
+        self.assertEqual(res.status, '302 Found')
+        self.assertEqual(res.location, self.settings['idp_url'])
+        self.assertEqual(self.db.actions.find({}).count(), 1)
+
+    def test_two_actions_one_with_session(self):
+        self.db.actions.insert(DUMMY_ACTION)
+        action2 = deepcopy(DUMMY_ACTION)
+        action2['_id'] = ObjectId('234567890123456789012302')
+        action2['action'] = 'dummy2'
+        action2['session'] = 'abcd'
+        action2['preference'] = 200
+        self.db.actions.insert(action2)
+        self.assertEqual(self.db.actions.find({}).count(), 2)
+        # token verification is disabled in the setUp
+        # method of FunctionalTestCase
+        url = ('/?userid=123467890123456789014567'
+                '&token=abc&nonce=sdf&ts=1401093117')
+        res = self.testapp.get(url)
+        self.assertEqual(res.status, '302 Found')
+        res = self.testapp.get(res.location)
+        form = res.forms['dummy']
+        res = form.submit('submit')
+        self.assertEqual(self.db.actions.find({}).count(), 1)
+        self.assertEqual(res.status, '302 Found')
+        self.assertEqual(res.location, 'http://localhost/perform-action')
+        res = self.testapp.get(res.location)
+        self.assertEqual(res.status, '302 Found')
+        self.assertEqual(res.location, self.settings['idp_url'])
+        self.assertEqual(self.db.actions.find({}).count(), 1)
+
+    def test_two_actions_with_different_session(self):
+        self.db.actions.insert(DUMMY_ACTION)
+        action2 = deepcopy(DUMMY_ACTION)
+        action2['_id'] = ObjectId('234567890123456789012302')
+        action2['action'] = 'dummy2'
+        action2['session'] = 'abcd'
+        action2['preference'] = 200
+        self.db.actions.insert(action2)
+        self.assertEqual(self.db.actions.find({}).count(), 2)
+        # token verification is disabled in the setUp
+        # method of FunctionalTestCase
+        url = ('/?userid=123467890123456789014567&session=xyzf'
+                '&token=abc&nonce=sdf&ts=1401093117')
+        res = self.testapp.get(url)
+        self.assertEqual(res.status, '302 Found')
+        res = self.testapp.get(res.location)
+        form = res.forms['dummy']
+        res = form.submit('submit')
+        self.assertEqual(self.db.actions.find({}).count(), 1)
+        self.assertEqual(res.status, '302 Found')
+        self.assertEqual(res.location, 'http://localhost/perform-action')
+        res = self.testapp.get(res.location)
+        self.assertEqual(res.status, '302 Found')
+        self.assertEqual(res.location, self.settings['idp_url'])
+        self.assertEqual(self.db.actions.find({}).count(), 1)
+
+    def test_two_actions_with_same_session(self):
+        self.db.actions.insert(DUMMY_ACTION)
+        action2 = deepcopy(DUMMY_ACTION)
+        action2['_id'] = ObjectId('234567890123456789012302')
+        action2['action'] = 'dummy2'
+        action2['session'] = 'abcd'
+        action2['preference'] = 200
+        self.db.actions.insert(action2)
+        self.assertEqual(self.db.actions.find({}).count(), 2)
+        # token verification is disabled in the setUp
+        # method of FunctionalTestCase
+        url = ('/?userid=123467890123456789014567&session=abcd'
+                '&token=abc&nonce=sdf&ts=1401093117')
+        res = self.testapp.get(url)
+        self.assertEqual(res.status, '302 Found')
+        res = self.testapp.get(res.location)
+        form = res.forms['dummy']
+        res = form.submit('submit')
+        self.assertEqual(self.db.actions.find({}).count(), 1)
+        self.assertEqual(res.status, '302 Found')
+        res = self.testapp.get(res.location)
+        form = res.forms['dummy']
+        res = form.submit('submit')
         self.assertEqual(self.db.actions.find({}).count(), 0)

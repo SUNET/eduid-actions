@@ -71,6 +71,7 @@ def actions(request):
         logger.info("Starting pre-login actions "
                     "for userid: {0})".format(userid))
         request.session['userid'] = userid
+        request.session['idp_session'] = request.GET.get('session', None)
         return HTTPFound(location='/perform-action')
     else:
         logger.info("Token authentication failed (userid: {0})".format(userid))
@@ -157,8 +158,22 @@ class PerformAction(object):
         actions = self.request.db.actions.find({'user_oid': ObjectId(userid)})
         if not actions.count():
             logger.info("Finished pre-login actions "
-                        "for userid: {0})".format(userid))
+                        "for userid: {0}".format(userid))
             raise HTTPFound(location=settings['idp_url'])
+        else:
+            if session['idp_session'] is not None:
+                actions = [a for a in actions if (not a.get('session', False) or
+                                        a['session'] == session['idp_session'])]
+                msg_no_actions = ("Finished pre-login actions "
+                            "for userid: {0} and session: {1}".format(userid,
+                                                        session['idp_session']))
+            else:
+                actions = [a for a in actions if not a.get('session', False)]
+                msg_no_actions = ("Finished pre-login actions "
+                                  "for userid: {0}".format(userid))
+            if not actions:
+                logger.info(msg_no_actions)
+                raise HTTPFound(location=settings['idp_url'])
         action = sorted(actions, key=lambda x: x['preference'])[-1]
         if not ('user_oid' in action and 'action' in action and
                 'preference' in action and 'params' in action):
