@@ -45,7 +45,7 @@ class ActionPlugin:
         '''
 
     @classmethod
-    def init_languages(cls, settings, locale_path):
+    def init_languages(cls, settings, locale_path, plugin_name):
         '''
         initialize the translations dictionary returned by
         ``get_translations`` for the available languages in
@@ -59,8 +59,9 @@ class ActionPlugin:
         '''
         translations = cls.get_translations()
         available_languages = settings['available_languages'].keys()
+        domain = 'eduid_action.' + plugin_name
         for lang in available_languages:
-            translations[lang] = gettext.translation('spam',
+            translations[lang] = gettext.translation(domain,
                                                      locale_path,
                                                      languages=[lang])
 

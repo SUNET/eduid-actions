@@ -35,7 +35,8 @@ class PluginsRegistry(dict):
                 self[entry_point.name] = entry_point.load()
                 package_name = 'eduid_action.' + entry_point.name
                 locale_path = resource_filename(package_name, 'locale')
-                self[entry_point.name].init_languages(settings, locale_path)
+                self[entry_point.name].init_languages(settings, locale_path,
+                                                      entry_point.name)
 
 
 def jinja2_settings(settings):
