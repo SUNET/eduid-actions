@@ -100,30 +100,8 @@ class FunctionalTestCase(unittest.TestCase):
             self.settings = settings
         else:
             self.settings.update(settings)
-        try:
-            app = main({}, **self.settings)
-            self.testapp = TestApp(app)
-            self.db = app.registry.settings['mongodb'].get_database()
-        except pymongo.errors.ConnectionFailure:
-            # The MongoTemporaryInstance from eduid_am only allows
-            # 10 connections, so if the test case has more than 9
-            # tests, we get a connection failure (one connection is
-            # spent in its __init__ method).
-            # For more than 9 tests, we must create another instance.
-            MongoTemporaryInstance._instance.shutdown()
-            MongoTemporaryInstance._instance = None
-            self.tmp_db = MongoTemporaryInstance.get_instance()
-            self.conn = self.tmp_db.conn
-            self.port = self.tmp_db.port
-            mongo_uri = 'mongodb://localhost:{0}/eduid_actions_test'
-            mongo_uri = mongo_uri.format(str(self.port))
-            self.settings['mongo_uri'] = mongo_uri
-            mongodb = MongoDB(db_uri=settings['mongo_uri'])
-            self.settings['mongodb'] = mongodb
-            self.settings['db_conn'] = mongodb.get_connection
-            app = main({}, **self.settings)
-            self.testapp = TestApp(app)
-            self.db = app.registry.settings['mongodb'].get_database()
+        self.setup_temp_db()
+        app = self.testapp.app
         self.db.actions.drop()
         app.registry.settings['action_plugins']['dummy'] = DummyActionPlugin
         app.registry.settings['action_plugins']['dummy2'] = DummyActionPlugin
@@ -141,3 +119,29 @@ class FunctionalTestCase(unittest.TestCase):
         for db_name in self.conn.database_names():
             self.conn.drop_database(db_name)
         self.testapp.reset()
+
+    def setup_temp_db(self):
+        '''
+        The MongoTemporaryInstance from eduid_am only allows
+        10 connections, so if the test case has more than 9
+        tests, we get a connection failure (one connection is
+        spent in its __init__ method).
+        For more than 9 tests, we must create another instance.
+        '''
+        try:
+            app = main({}, **self.settings)
+        except pymongo.errors.ConnectionFailure:
+            MongoTemporaryInstance._instance.shutdown()
+            MongoTemporaryInstance._instance = None
+            self.tmp_db = MongoTemporaryInstance.get_instance()
+            self.conn = self.tmp_db.conn
+            self.port = self.tmp_db.port
+            mongo_uri = 'mongodb://localhost:{0}/eduid_actions_test'
+            mongo_uri = mongo_uri.format(str(self.port))
+            self.settings['mongo_uri'] = mongo_uri
+            mongodb = MongoDB(db_uri=mongo_uri)
+            self.settings['mongodb'] = mongodb
+            self.settings['db_conn'] = mongodb.get_connection
+            app = main({}, **self.settings)
+        self.testapp = TestApp(app)
+        self.db = app.registry.settings['mongodb'].get_database()
