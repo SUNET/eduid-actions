@@ -10,6 +10,8 @@ from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationError
 from pyramid.i18n import get_locale_name
 from pyramid_beaker import session_factory_from_settings
+from pyramid.interfaces import IStaticURLInfo
+from pyramid.config.views import StaticURLInfo
 
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.httpexceptions import HTTPForbidden, HTTPBadRequest
@@ -37,6 +39,16 @@ class PluginsRegistry(dict):
                 locale_path = resource_filename(package_name, 'locale')
                 self[entry_point.name].init_languages(settings, locale_path,
                                                       entry_point.name)
+
+
+class ConfiguredHostStaticURLInfo(StaticURLInfo):
+
+    def generate(self, path, request, **kw):
+        host = request.registry.settings.get('static_assets_host_override', None)
+        kw.update({'_host': host})
+        return super(ConfiguredHostStaticURLInfo, self).generate(path,
+                                                                 request,
+                                                                 **kw)
 
 
 def jinja2_settings(settings):
@@ -159,6 +171,10 @@ def main(global_config, **settings):
     session_factory = session_factory_from_settings(settings)
     config = Configurator(settings=settings,
                           locale_negotiator=locale_negotiator)
+
+    config.registry.registerUtility(ConfiguredHostStaticURLInfo(),
+                                    IStaticURLInfo)
+
     config.set_session_factory(session_factory)
 
     config.set_request_property(get_locale_name, 'locale', reify=True)
