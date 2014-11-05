@@ -122,31 +122,51 @@ class PerformAction(object):
         session = self.request.session
         plugin_obj = session['current_plugin']
         action = session['current_action']
+        errors = {}
         if session['total_steps'] == session['current_step']:
             try:
                 plugin_obj.perform_action(action, self.request)
+
             except plugin_obj.ActionError as exc:
                 self._log_aborted(action, session, exc)
                 html = u'<h2>{0}</h2>'.format(exc.args[0])
                 return render_to_response('main.jinja2',
                                           {'plugin_html': html},
                                           request=self.request)
-            self.request.db.actions.find_and_modify(
-                    {'_id': action['_id']},
-                    remove=True)
-            logger.info('Finished pre-login action {0} '
-                        'for userid {1}'.format(action['action'],
-                                                session['userid']))
-            return HTTPFound(location='/perform-action')
+
+            except plugin_obj.ValidationError as exc:
+                errors = exc.args[0]
+                next_step = session['current_step'] - 1
+                session['current_step'] = next_step
+
+            else:
+                self.request.db.actions.find_and_modify(
+                        {'_id': action['_id']},
+                        remove=True)
+                logger.info('Finished pre-login action {0} '
+                            'for userid {1}'.format(action['action'],
+                                                    session['userid']))
+                return HTTPFound(location='/perform-action')
+
         next_step = session['current_step'] + 1
         session['current_step'] = next_step
         try:
             html = plugin_obj.get_action_body_for_step(next_step,
                                                        action,
-                                                       self.request)
+                                                       self.request,
+                                                       errors=errors)
         except plugin_obj.ActionError as exc:
             self._log_aborted(action, session, exc)
             html = u'<h2>{0}</h2>'.format(exc.args[0])
+
+        except plugin_obj.ValidationError as exc:
+            errors = exc.args[0]
+            html = plugin_obj.get_action_body_for_step(next_step,
+                                                       action,
+                                                       self.request,
+                                                       errors=errors)
+
+
         return render_to_response('main.jinja2',
                                   {'plugin_html': html},
                                   request=self.request)

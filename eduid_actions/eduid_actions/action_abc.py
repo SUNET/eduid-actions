@@ -133,6 +133,16 @@ class ActionPlugin:
         :type arg: unicode
         '''
 
+    class ValidationError(Exception):
+        '''
+        exception to be raised if some form doesn't validate,
+        either in `get_action_body_for_step`, or in `perform_action`.
+        Instantiated with a dict of field names to error messages.
+
+        :param arg: error messages for each field
+        :type arg: dict
+        '''
+
     @abstractmethod
     def includeme(self, config):
         '''
@@ -155,7 +165,7 @@ class ActionPlugin:
         '''
 
     @abstractmethod
-    def get_action_body_for_step(self, step_number, action, request):
+    def get_action_body_for_step(self, step_number, action, request, errors=None):
         '''
         Return the html form that corresponds to step number
         `step_number`. If there is some error in the process,
@@ -164,12 +174,14 @@ class ActionPlugin:
         :param step_number: the step number
         :param action: the action as retrieved from the eduid_actions db
         :param request: the request
+        :param errors: validation errors
         :returns: the html to be presented to the user for the next step
         :raise: ActionPlugin.ActionError
 
         :type step_number: int
         :type action: dict
         :type request: pyramid.request.Request
+        :type errors: dict
         :rtype: unicode
 
 
