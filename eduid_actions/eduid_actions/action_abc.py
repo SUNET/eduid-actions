@@ -121,6 +121,15 @@ class ActionPlugin:
         '''
 
     @abstractmethod
+    def includeme(self, config):
+        '''
+        Plugin specific configuration for the eduid_actions app.
+
+        :param config: the pyramid configurator for the wsgi app.
+        :type arg: pyramid.config.Configurator
+        '''
+
+    @abstractmethod
     def get_number_of_steps(self):
         '''
         The number of steps that the user has to take
