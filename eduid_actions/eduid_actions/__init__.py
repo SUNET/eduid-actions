@@ -190,7 +190,7 @@ def main(global_config, **settings):
     includeme(config)
     config.scan(ignore=[re.compile('.*tests.*').search, '.testing'])
 
-    for plugin in settings['action_plugins']:
+    for plugin in config.registry.settings['action_plugins'].values():
         plugin.includeme(config)
 
     return config.make_wsgi_app()

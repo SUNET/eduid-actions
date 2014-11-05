@@ -143,6 +143,7 @@ class ActionPlugin:
         :type arg: dict
         '''
 
+    @classmethod
     @abstractmethod
     def includeme(self, config):
         '''
