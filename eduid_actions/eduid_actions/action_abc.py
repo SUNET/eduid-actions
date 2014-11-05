@@ -89,6 +89,19 @@ class ActionPlugin:
             locale_name = settings.get('default_locale_name', 'sv')
         return locale_name
 
+    def get_ugettext(self, request):
+        '''
+        get the ugettext method that corresponds to the given request.
+
+        :param request: the request
+        :returns: the ugettext method
+
+        :type request: pyramid.request.Request
+        :rtype: function
+        '''
+        lang = self.get_language(request)
+        return self.get_translations()[lang].ugettext
+
     class ActionError(Exception):
         '''
         exception to be raised if the action to be performed fails,
