@@ -1,15 +1,18 @@
 __author__ = 'eperez'
 
+import time
+import atexit
+import random
+import shutil
+import tempfile
 import unittest
-from cookielib import Cookie
-from webtest import TestApp, TestRequest
-from mock import patch
+import subprocess
+import os
 import pymongo
-from pyramid.testing import DummyRequest, DummyResource
-from pyramid.interfaces import ISessionFactory
 
-from eduid_am.db import MongoDB
-from eduid_am.testing import MongoTemporaryInstance
+from webtest import TestApp
+from mock import patch
+
 from eduid_actions import main
 from eduid_actions import views
 from eduid_actions.action_abc import ActionPlugin
@@ -47,6 +50,66 @@ class DummyActionPlugin(ActionPlugin):
             return
 
 
+class MongoTemporaryInstance(object):
+    """Singleton to manage a temporary MongoDB instance
+
+    Use this for testing purpose only. The instance is automatically destroyed
+    at the end of the program.
+
+    """
+    _instance = None
+
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+            atexit.register(cls._instance.shutdown)
+        return cls._instance
+
+    def __init__(self):
+        self._tmpdir = tempfile.mkdtemp()
+        self._port = random.randint(40000, 50000)
+        self._process = subprocess.Popen(['mongod', '--bind_ip', 'localhost',
+                                          '--port', str(self._port),
+                                          '--dbpath', self._tmpdir,
+                                          '--nojournal', '--nohttpinterface',
+                                          '--noauth', '--smallfiles',
+                                          '--syncdelay', '0',
+                                          '--nssize', '1', ],
+                                         stdout=open(os.devnull, 'wb'),
+                                         stderr=subprocess.STDOUT)
+
+        # XXX: wait for the instance to be ready
+        #      Mongo is ready in a glance, we just wait to be able to open a
+        #      Connection.
+        for i in range(10):
+            time.sleep(0.2)
+            try:
+                self._conn = pymongo.Connection('localhost', self._port)
+            except pymongo.errors.ConnectionFailure:
+                continue
+            else:
+                break
+        else:
+            self.shutdown()
+            assert False, 'Cannot connect to the mongodb test instance'
+
+    @property
+    def conn(self):
+        return self._conn
+
+    @property
+    def port(self):
+        return self._port
+
+    def shutdown(self):
+        if self._process:
+            self._process.terminate()
+            self._process.wait()
+            self._process = None
+            shutil.rmtree(self._tmpdir, ignore_errors=True)
+
+
 class FunctionalTestCase(unittest.TestCase):
     """TestCase with an embedded MongoDB temporary instance.
 
@@ -69,12 +132,9 @@ class FunctionalTestCase(unittest.TestCase):
         for db_name in self.conn.database_names():
             self.conn.drop_database(db_name)
 
-        mongo_uri = 'mongodb://localhost:{0}/eduid_actions_test'
-        mongo_uri = mongo_uri.format(str(self.port))
-
         settings = {
             'mongo_replicaset': None,
-            'mongo_uri': mongo_uri,
+            'mongo_uri': 'mongodb://localhost:{0}/eduid_actions_test',
             'site.name': 'Test Site',
             'auth_shared_secret': '123123',
             'testing': True,
@@ -100,7 +160,12 @@ class FunctionalTestCase(unittest.TestCase):
             self.settings = settings
         else:
             self.settings.update(settings)
-        self.setup_temp_db()
+        for key in self.settings:
+            if key.startswith('mongo_uri'):
+                self.settings[key] = self.settings[key].format(str(self.port))
+        app = main({}, **self.settings)
+        self.testapp = TestApp(app)
+        self.db = app.registry.settings['mongodb'].get_database()
         app = self.testapp.app
         self.db.actions.drop()
         app.registry.settings['action_plugins']['dummy'] = DummyActionPlugin
@@ -119,29 +184,3 @@ class FunctionalTestCase(unittest.TestCase):
         for db_name in self.conn.database_names():
             self.conn.drop_database(db_name)
         self.testapp.reset()
-
-    def setup_temp_db(self):
-        '''
-        The MongoTemporaryInstance from eduid_am only allows
-        10 connections, so if the test case has more than 9
-        tests, we get a connection failure (one connection is
-        spent in its __init__ method).
-        For more than 9 tests, we must create another instance.
-        '''
-        try:
-            app = main({}, **self.settings)
-        except pymongo.errors.ConnectionFailure:
-            MongoTemporaryInstance._instance.shutdown()
-            MongoTemporaryInstance._instance = None
-            self.tmp_db = MongoTemporaryInstance.get_instance()
-            self.conn = self.tmp_db.conn
-            self.port = self.tmp_db.port
-            mongo_uri = 'mongodb://localhost:{0}/eduid_actions_test'
-            mongo_uri = mongo_uri.format(str(self.port))
-            self.settings['mongo_uri'] = mongo_uri
-            mongodb = MongoDB(db_uri=mongo_uri)
-            self.settings['mongodb'] = mongodb
-            self.settings['db_conn'] = mongodb.get_connection
-            app = main({}, **self.settings)
-        self.testapp = TestApp(app)
-        self.db = app.registry.settings['mongodb'].get_database()
