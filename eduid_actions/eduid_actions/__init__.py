@@ -13,14 +13,16 @@ from pyramid_beaker import session_factory_from_settings
 from pyramid.interfaces import IStaticURLInfo
 from pyramid.config.views import StaticURLInfo
 
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPForbidden, HTTPBadRequest
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.httpexceptions import HTTPInternalServerError
 
 from eduid_am.db import MongoDB
-from eduid_am.config import read_setting_from_env, read_mapping, read_list
+from eduid_am.celery import celery
+from eduid_am.config import read_setting_from_env, read_mapping
 from eduid_actions.i18n import locale_negotiator
+from eduid_actions.context import RootFactory
 
 
 log = logging.getLogger('eduid_actions')
@@ -79,6 +81,12 @@ def includeme(config):
     config.registry.settings['db_conn'] = mongodb.get_connection
 
     config.set_request_property(lambda x: x.registry.settings['mongodb'].get_database(), 'db', reify=True)
+
+    # configure Celery broker
+    broker_url = read_setting_from_env(settings, 'broker_url', 'amqp://')
+    celery.conf.update(BROKER_URL=broker_url)
+    settings['celery'] = celery
+    settings['broker_url'] = broker_url
 
     # Favicon
     config.add_route('favicon', '/favicon.ico')
@@ -170,6 +178,7 @@ def main(global_config, **settings):
 
     session_factory = session_factory_from_settings(settings)
     config = Configurator(settings=settings,
+                          root_factory=RootFactory,
                           locale_negotiator=locale_negotiator)
 
     config.registry.registerUtility(ConfiguredHostStaticURLInfo(),

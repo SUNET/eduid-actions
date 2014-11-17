@@ -136,13 +136,17 @@ class PerformAction(object):
 
             except plugin_obj.ValidationError as exc:
                 errors = exc.args[0]
-                next_step = session['current_step'] - 1
-                session['current_step'] = next_step
+                logger.info('Validation error {0} '
+                            'for step {1} of action {2}'.format(
+                                str(errors),
+                                str(session['current_step']),
+                                str(action)))
+                session['current_step'] -= 1
 
             else:
                 self.request.db.actions.find_and_modify(
-                        {'_id': action['_id']},
-                        remove=True)
+                    {'_id': action['_id']},
+                    remove=True)
                 logger.info('Finished pre-login action {0} '
                             'for userid {1}'.format(action['action'],
                                                     session['userid']))
@@ -166,7 +170,6 @@ class PerformAction(object):
                                                        self.request,
                                                        errors=errors)
 
-
         return render_to_response('main.jinja2',
                                   {'plugin_html': html},
                                   request=self.request)
@@ -182,11 +185,13 @@ class PerformAction(object):
             raise HTTPFound(location=settings['idp_url'])
         else:
             if session['idp_session'] is not None:
-                actions = [a for a in actions if (not a.get('session', False) or
-                                        a['session'] == session['idp_session'])]
+                actions = [a for a in actions if
+                           (not a.get('session', False) or
+                            a['session'] == session['idp_session'])]
                 msg_no_actions = ("Finished pre-login actions "
-                            "for userid: {0} and session: {1}".format(userid,
-                                                        session['idp_session']))
+                                  "for userid: {0} and session: {1}".format(
+                                      userid,
+                                      session['idp_session']))
             else:
                 actions = [a for a in actions if not a.get('session', False)]
                 msg_no_actions = ("Finished pre-login actions "
@@ -218,12 +223,12 @@ class PerformAction(object):
 
 def exception_view(context, request):
     logger.error("The error was: %s" % context, exc_info=(context))
-    request.response.status = 500 
+    request.response.status = 500
     return {}
 
 
 def not_found_view(context, request):
-    request.response.status = 404 
+    request.response.status = 404
     return {}
 
 

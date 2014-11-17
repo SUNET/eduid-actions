@@ -40,7 +40,6 @@ class DummyActionPlugin(ActionPlugin):
                            <input type="submit" name="reject" value="reject">
                        </form>'''
 
-
     def perform_action(self, action, request):
         if action['params'].get('perform_failure', False):
             raise self.ActionError(u'Perform failure')
@@ -145,13 +144,13 @@ class FunctionalTestCase(unittest.TestCase):
             'jinja2.directories': 'eduid_actions:templates',
             'jinja2.undefined': 'strict',
             'jinja2.i18n.domain': 'eduid-actions',
-            'jinja2.filters': """ 
+            'jinja2.filters': """
                 route_url = pyramid_jinja2.filters:route_url_filter
                 static_url = pyramid_jinja2.filters:static_url_filter
                 """,
             'session.type': 'memory',
             'session.key': 'session',
-            'session.lock_dir':'/tmp',
+            'session.lock_dir': '/tmp',
             'session.secret': '123456',
             'idp_url': 'http://example.com/idp',
         }
@@ -170,10 +169,12 @@ class FunctionalTestCase(unittest.TestCase):
         self.db.actions.drop()
         app.registry.settings['action_plugins']['dummy'] = DummyActionPlugin
         app.registry.settings['action_plugins']['dummy2'] = DummyActionPlugin
+
         def mock_verify_auth_token(*args, **kwargs):
             if args[1] == 'fail_verify':
                 return False
             return True
+
         mock_config = {'new_callable': lambda: mock_verify_auth_token}
         self.patcher = patch.object(views, 'verify_auth_token', **mock_config)
         self.patcher.start()
@@ -184,3 +185,4 @@ class FunctionalTestCase(unittest.TestCase):
         for db_name in self.conn.database_names():
             self.conn.drop_database(db_name)
         self.testapp.reset()
+        self.patcher.stop()
