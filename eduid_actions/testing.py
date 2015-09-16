@@ -27,9 +27,9 @@ class DummyActionPlugin(ActionPlugin):
         return cls.translations
 
     def get_number_of_steps(self):
-        return 1
+        return self._steps
 
-    def get_action_body_for_step(self, step_number, action, request):
+    def get_action_body_for_step(self, step_number, action, request, errors=None):
         if action['params'].get('body_failure', False):
             raise self.ActionError(u'Body failure')
         else:
@@ -47,6 +47,16 @@ class DummyActionPlugin(ActionPlugin):
             raise self.ActionError(u'Action not performed')
         else:
             return
+
+
+class DummyActionPlugin1(DummyActionPlugin):
+
+    _steps = 1
+
+
+class DummyActionPlugin2(DummyActionPlugin):
+
+    _steps = 2
 
 
 class MongoTemporaryInstance(object):
@@ -167,8 +177,9 @@ class FunctionalTestCase(unittest.TestCase):
         self.db = app.registry.settings['mongodb'].get_database()
         app = self.testapp.app
         self.db.actions.drop()
-        app.registry.settings['action_plugins']['dummy'] = DummyActionPlugin
-        app.registry.settings['action_plugins']['dummy2'] = DummyActionPlugin
+        app.registry.settings['action_plugins']['dummy'] = DummyActionPlugin1
+        app.registry.settings['action_plugins']['dummy2'] = DummyActionPlugin1
+        app.registry.settings['action_plugins']['dummy_2steps'] = DummyActionPlugin2
 
         def mock_verify_auth_token(*args, **kwargs):
             if args[1] == 'fail_verify':
