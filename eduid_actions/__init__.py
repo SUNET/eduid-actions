@@ -49,7 +49,7 @@ from pyramid.httpexceptions import HTTPForbidden, HTTPBadRequest
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.httpexceptions import HTTPInternalServerError
 
-from eduid_am.db import MongoDB
+from eduid_userdb.actions import ActionDB
 from eduid_am.celery import celery
 from eduid_am.config import read_setting_from_env, read_mapping
 from eduid_actions.i18n import locale_negotiator
@@ -102,16 +102,12 @@ def includeme(config):
     # DB setup
     settings = config.registry.settings
     mongo_replicaset = settings.get('mongo_replicaset', None)
-    if mongo_replicaset is not None:
-        mongodb = MongoDB(db_uri=settings['mongo_uri'],
-                          replicaSet=mongo_replicaset)
-    else:
-        mongodb = MongoDB(db_uri=settings['mongo_uri'])
+    actions_db = ActionDB(settings['mongo_uri'], replicaSet=mongo_replicaset)
 
-    config.registry.settings['mongodb'] = mongodb
-    config.registry.settings['db_conn'] = mongodb.get_connection
+    config.registry.settings['actions_db'] = actions_db
 
-    config.set_request_property(lambda x: x.registry.settings['mongodb'].get_database(), 'db', reify=True)
+    config.set_request_property(lambda x: x.registry.settings['actions_db'],
+            'actions_db', reify=True)
 
     # configure Celery broker
     broker_url = read_setting_from_env(settings, 'broker_url', 'amqp://')

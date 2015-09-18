@@ -103,7 +103,9 @@ def actions(request):
         logger.info("Starting pre-login actions "
                     "for userid: {0})".format(userid))
         request.session['userid'] = userid
-        request.session['idp_session'] = request.GET.get('session', None)
+        idp_session = request.GET.get('session', None)
+        request.session['idp_session'] = idp_session
+        request.actions_db.clean_cache(userid, idp_session)
         return HTTPFound(location='/perform-action')
     else:
         logger.info("Token authentication failed (userid: {0})".format(userid))
@@ -138,7 +140,7 @@ class PerformAction(object):
         plugin_obj = session['current_plugin']
         action = session['current_action']
         logger.info('Starting pre-login action {0} '
-                    'for userid {1}'.format(action['action'],
+                    'for userid {1}'.format(action.action_type,
                                             session['userid']))
         try:
             html = plugin_obj.get_action_body_for_step(1, action,
@@ -176,11 +178,9 @@ class PerformAction(object):
                 session['current_step'] -= 1
 
             else:
-                self.request.db.actions.find_and_modify(
-                    {'_id': action['_id']},
-                    remove=True)
+                self.request.actions_db.remove_action_by_id(action.action_id)
                 logger.info('Finished pre-login action {0} '
-                            'for userid {1}'.format(action['action'],
+                            'for userid {1}'.format(action.action_type,
                                                     session['userid']))
                 return HTTPFound(location='/perform-action')
 
@@ -210,45 +210,26 @@ class PerformAction(object):
         session = self.request.session
         settings = self.request.registry.settings
         userid = session['userid']
-        actions = self.request.db.actions.find({'user_oid': ObjectId(userid)})
-        if not actions.count():
+        idp_session = session.get('idp_session', None)
+        action = self.request.actions_db.get_next_action(userid, idp_session)
+        if action is None:
             logger.info("Finished pre-login actions "
                         "for userid: {0}".format(userid))
             raise HTTPFound(location=settings['idp_url'])
-        else:
-            if session['idp_session'] is not None:
-                actions = [a for a in actions if
-                           (not a.get('session', False) or
-                            a['session'] == session['idp_session'])]
-                msg_no_actions = ("Finished pre-login actions "
-                                  "for userid: {0} and session: {1}".format(
-                                      userid,
-                                      session['idp_session']))
-            else:
-                actions = [a for a in actions if not a.get('session', False)]
-                msg_no_actions = ("Finished pre-login actions "
-                                  "for userid: {0}".format(userid))
-            if not actions:
-                logger.info(msg_no_actions)
-                raise HTTPFound(location=settings['idp_url'])
-        action = sorted(actions, key=lambda x: x['preference'])[-1]
-        if not ('user_oid' in action and 'action' in action and
-                'preference' in action and 'params' in action):
-            logger.info("Malformed action {0}".format(str(action['_id'])))
+
+        if action.action_type not in settings['action_plugins']:
+            logger.info("Missing plugin for action {0}".format(action.action_type))
             raise HTTPInternalServerError()
-        name = action['action']
-        if name not in settings['action_plugins']:
-            logger.info("Missing plugin for action {0}".format(name))
-            raise HTTPInternalServerError()
+
         session['current_action'] = action
         session['current_step'] = 1
-        plugin_obj = settings['action_plugins'][name]()
+        plugin_obj = settings['action_plugins'][action.action_type]()
         session['current_plugin'] = plugin_obj
         session['total_steps'] = plugin_obj.get_number_of_steps()
 
     def _log_aborted(self, action, session, exc):
         logger.info('Aborted pre-login action {0} for userid {1}, '
-                    'reason: {2}'.format(action['action'],
+                    'reason: {2}'.format(action.action_type,
                                          session['userid'],
                                          exc.args[0]))
 

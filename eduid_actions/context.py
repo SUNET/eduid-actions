@@ -46,6 +46,3 @@ class RootFactory(object):
 
     def __init__(self, request):
         self.request = request
-
-    def propagate_user_changes(self, user):
-        update_attributes.delay('eduid_dashboard', str(user['_id']))

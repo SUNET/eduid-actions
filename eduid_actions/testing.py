@@ -62,7 +62,7 @@ class DummyActionPlugin(ActionPlugin):
         return self._steps
 
     def get_action_body_for_step(self, step_number, action, request, errors=None):
-        if action['params'].get('body_failure', False):
+        if action.params.get('body_failure', False):
             raise self.ActionError(u'Body failure')
         else:
             return u'''
@@ -73,7 +73,7 @@ class DummyActionPlugin(ActionPlugin):
                        </form>'''
 
     def perform_action(self, action, request):
-        if action['params'].get('perform_failure', False):
+        if action.params.get('perform_failure', False):
             raise self.ActionError(u'Perform failure')
         elif request.POST.get('reject', False):
             raise self.ActionError(u'Action not performed')
@@ -206,9 +206,9 @@ class FunctionalTestCase(unittest.TestCase):
                 self.settings[key] = self.settings[key].format(str(self.port))
         app = main({}, **self.settings)
         self.testapp = TestApp(app)
-        self.db = app.registry.settings['mongodb'].get_database()
+        self.actions_db = app.registry.settings['actions_db']
         app = self.testapp.app
-        self.db.actions.drop()
+        self.actions_db._drop_whole_collection()
         app.registry.settings['action_plugins']['dummy'] = DummyActionPlugin1
         app.registry.settings['action_plugins']['dummy2'] = DummyActionPlugin1
         app.registry.settings['action_plugins']['dummy_2steps'] = DummyActionPlugin2
@@ -224,7 +224,7 @@ class FunctionalTestCase(unittest.TestCase):
 
     def tearDown(self):
         super(FunctionalTestCase, self).tearDown()
-        self.db.actions.drop()
+        self.actions_db._drop_whole_collection()
         for db_name in self.conn.database_names():
             self.conn.drop_database(db_name)
         self.testapp.reset()

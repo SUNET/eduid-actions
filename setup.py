@@ -23,13 +23,14 @@ else:
 version = '0.0.1-dev'
 
 requires = [
-    'pymongo==2.6.3',
+    'pymongo>=2.8,<3',
     'pyramid==1.5',
     'pyramid_debugtoolbar==2.0.2',
     'pyramid_jinja2==2.1',
     'pyramid_beaker==0.8',
     'waitress==0.8.9',
-    'eduid_am',
+    'eduid_am>=0.6.1b0',
+    'eduid_userdb>=0.0.4b3',
 ] 
 
 if sys.version_info[0] < 3:
