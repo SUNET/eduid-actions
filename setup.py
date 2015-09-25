@@ -13,14 +13,14 @@ except ImportError:
     print "Babel is not installed, you can't localize this package"
     cmdclass = {}
 else:
-    cmdclass = { 
+    cmdclass = {
         'compile_catalog': babel.compile_catalog,
         'extract_messages': babel.extract_messages,
         'init_catalog': babel.init_catalog,
         'update_catalog': babel.update_catalog
     }
 
-version = '0.0.1-dev'
+version = '0.0.1b0'
 
 requires = [
     'pymongo>=2.8,<3',
@@ -31,7 +31,7 @@ requires = [
     'waitress==0.8.9',
     'eduid_am>=0.6.1b0',
     'eduid_userdb>=0.0.4b3',
-] 
+]
 
 if sys.version_info[0] < 3:
     # Babel does not work with Python 3
@@ -39,7 +39,7 @@ if sys.version_info[0] < 3:
     requires.append('lingua==1.5')
 
 
-test_requires = [ 
+test_requires = [
     'WebTest==2.0.15',
     'mock==1.0.1',
 ]
