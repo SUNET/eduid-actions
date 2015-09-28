@@ -31,7 +31,6 @@
 #
 
 from pyramid.i18n import TranslationStringFactory
-from eduid_am.user import User
 
 translation_domain = 'eduid-actions'
 TranslationString = TranslationStringFactory(translation_domain)
