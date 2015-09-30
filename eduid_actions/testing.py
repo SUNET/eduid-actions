@@ -45,9 +45,13 @@ import pymongo
 from webtest import TestApp
 from mock import patch
 
+from eduid_userdb.testing import MongoTemporaryInstance, MongoTestCase
+
 from eduid_actions import main
 from eduid_actions import views
 from eduid_actions.action_abc import ActionPlugin
+
+from eduid_am.celery import celery, get_attribute_manager
 
 
 class DummyActionPlugin(ActionPlugin):
@@ -91,67 +95,7 @@ class DummyActionPlugin2(DummyActionPlugin):
     _steps = 2
 
 
-class MongoTemporaryInstance(object):
-    """Singleton to manage a temporary MongoDB instance
-
-    Use this for testing purpose only. The instance is automatically destroyed
-    at the end of the program.
-
-    """
-    _instance = None
-
-    @classmethod
-    def get_instance(cls):
-        if cls._instance is None:
-            cls._instance = cls()
-            atexit.register(cls._instance.shutdown)
-        return cls._instance
-
-    def __init__(self):
-        self._tmpdir = tempfile.mkdtemp()
-        self._port = random.randint(40000, 50000)
-        self._process = subprocess.Popen(['mongod', '--bind_ip', 'localhost',
-                                          '--port', str(self._port),
-                                          '--dbpath', self._tmpdir,
-                                          '--nojournal', '--nohttpinterface',
-                                          '--noauth', '--smallfiles',
-                                          '--syncdelay', '0',
-                                          '--nssize', '1', ],
-                                         stdout=open(os.devnull, 'wb'),
-                                         stderr=subprocess.STDOUT)
-
-        # XXX: wait for the instance to be ready
-        #      Mongo is ready in a glance, we just wait to be able to open a
-        #      Connection.
-        for i in range(10):
-            time.sleep(0.2)
-            try:
-                self._conn = pymongo.Connection('localhost', self._port)
-            except pymongo.errors.ConnectionFailure:
-                continue
-            else:
-                break
-        else:
-            self.shutdown()
-            assert False, 'Cannot connect to the mongodb test instance'
-
-    @property
-    def conn(self):
-        return self._conn
-
-    @property
-    def port(self):
-        return self._port
-
-    def shutdown(self):
-        if self._process:
-            self._process.terminate()
-            self._process.wait()
-            self._process = None
-            shutil.rmtree(self._tmpdir, ignore_errors=True)
-
-
-class FunctionalTestCase(unittest.TestCase):
+class FunctionalTestCase(MongoTestCase):
     """TestCase with an embedded MongoDB temporary instance.
 
     Each test runs on a temporary instance of MongoDB. The instance will
@@ -161,21 +105,16 @@ class FunctionalTestCase(unittest.TestCase):
     A test can access the port using the attribute `port`
     """
 
-    def setUp(self):
-        super(FunctionalTestCase, self).setUp()
-        try:
-            self.tmp_db = MongoTemporaryInstance.get_instance()
-        except OSError:
-            raise unittest.SkipTest("requires accessible mongod executable")
+    def setUp(self, extra_settings, extra_dbs):
+        self.tmp_db = MongoTemporaryInstance.get_instance()
         self.conn = self.tmp_db.conn
         self.port = self.tmp_db.port
 
-        for db_name in self.conn.database_names():
-            self.conn.drop_database(db_name)
-
-        settings = {
+        self.settings = {
             'mongo_replicaset': None,
-            'mongo_uri': 'mongodb://localhost:{0}/eduid_actions_test',
+            'mongo_uri': self.tmp_db.get_uri('eduid_actions_test'),
+            'mongo_uri_am': self.tmp_db.get_uri('eduid_am_test'),
+            'mongo_name_am': 'eduid_am_test',
             'site.name': 'Test Site',
             'auth_shared_secret': '123123',
             'testing': True,
@@ -196,14 +135,10 @@ class FunctionalTestCase(unittest.TestCase):
             'session.secret': '123456',
             'idp_url': 'http://example.com/idp',
         }
-
-        if getattr(self, 'settings', None) is None:
-            self.settings = settings
-        else:
-            self.settings.update(settings)
-        for key in self.settings:
-            if key.startswith('mongo_uri'):
-                self.settings[key] = self.settings[key].format(str(self.port))
+        self.settings.update(extra_settings)
+        for key, name in extra_dbs:
+            self.settings[key] = self.tmp_db.get_uri(name)
+        super(FunctionalTestCase, self).setUp(celery, get_attribute_manager)
         app = main({}, **self.settings)
         self.testapp = TestApp(app)
         self.actions_db = app.registry.settings['actions_db']
