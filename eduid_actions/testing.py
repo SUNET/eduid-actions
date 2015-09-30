@@ -32,6 +32,7 @@
 
 __author__ = 'eperez'
 
+import copy
 import unittest
 
 from webtest import TestApp
@@ -43,6 +44,29 @@ from eduid_actions.action_abc import ActionPlugin
 
 from eduid_userdb.testing import MongoTemporaryInstance
 
+
+_SETTINGS = {
+    'mongo_replicaset': None,
+    'site.name': 'Test Site',
+    'auth_shared_secret': '123123',
+    'testing': True,
+    'pyramid.includes': '''
+                pyramid_jinja2
+                pyramid_beaker
+                ''',
+    'jinja2.directories': 'eduid_actions:templates',
+    'jinja2.undefined': 'strict',
+    'jinja2.i18n.domain': 'eduid-actions',
+    'jinja2.filters': """
+                route_url = pyramid_jinja2.filters:route_url_filter
+                static_url = pyramid_jinja2.filters:static_url_filter
+                """,
+    'session.type': 'memory',
+    'session.key': 'session',
+    'session.lock_dir': '/tmp',
+    'session.secret': '123456',
+    'idp_url': 'http://example.com/idp',
+    }
 
 class DummyActionPlugin(ActionPlugin):
 
@@ -107,38 +131,13 @@ class FunctionalTestCase(unittest.TestCase):
         for db_name in self.conn.database_names():
             self.conn.drop_database(db_name)
 
-        settings = {
-            'mongo_replicaset': None,
-            'site.name': 'Test Site',
-            'auth_shared_secret': '123123',
-            'testing': True,
-            'pyramid.includes': '''
-                pyramid_jinja2
-                pyramid_beaker
-                ''',
-            'jinja2.directories': 'eduid_actions:templates',
-            'jinja2.undefined': 'strict',
-            'jinja2.i18n.domain': 'eduid-actions',
-            'jinja2.filters': """
-                route_url = pyramid_jinja2.filters:route_url_filter
-                static_url = pyramid_jinja2.filters:static_url_filter
-                """,
-            'session.type': 'memory',
-            'session.key': 'session',
-            'session.lock_dir': '/tmp',
-            'session.secret': '123456',
-            'idp_url': 'http://example.com/idp',
-        }
+        settings = copy.deepcopy(_SETTINGS)
         settings['mongo_uri'] = self.tmp_db.get_uri('eduid_actions_test')
-        settings['mongo_uri_tou'] = self.tmp_db.get_uri('eduid_actions_tou')
 
         if getattr(self, 'settings', None) is None:
             self.settings = settings
         else:
             self.settings.update(settings)
-        for key in self.settings:
-            if key.startswith('mongo_uri'):
-                self.settings[key] = self.settings[key].format(str(self.port))
 
         app = main({}, **self.settings)
 

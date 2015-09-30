@@ -32,7 +32,6 @@
 
 from copy import deepcopy
 from bson import ObjectId
-from mock import patch
 from eduid_actions.testing import FunctionalTestCase
 
 
