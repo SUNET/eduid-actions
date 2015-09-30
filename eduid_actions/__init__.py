@@ -50,6 +50,7 @@ from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.httpexceptions import HTTPInternalServerError
 
 from eduid_userdb.actions import ActionDB
+from eduid_userdb.userdb import UserDB
 from eduid_am.celery import celery
 from eduid_am.config import read_setting_from_env, read_mapping
 from eduid_actions.i18n import locale_negotiator
@@ -108,6 +109,12 @@ def includeme(config):
 
     config.set_request_property(lambda x: x.registry.settings['actions_db'],
             'actions_db', reify=True)
+    amdb = UserDB(settings['mongo_uri'], 'eduid_am')   # XXX hard-coded name of old userdb. How will we transition?
+
+    config.registry.settings['amdb'] = amdb
+
+    config.set_request_property(lambda x: x.registry.settings['amdb'],
+            'amdb', reify=True)
 
     # configure Celery broker
     broker_url = read_setting_from_env(settings, 'broker_url', 'amqp://')

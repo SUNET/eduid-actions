@@ -33,7 +33,6 @@
 __author__ = 'eperez'
 
 import copy
-import unittest
 
 from webtest import TestApp
 from mock import patch
@@ -42,8 +41,8 @@ from eduid_actions import main
 from eduid_actions import views
 from eduid_actions.action_abc import ActionPlugin
 
-from eduid_userdb.testing import MongoTemporaryInstance
-
+from eduid_am.celery import celery, get_attribute_manager
+from eduid_userdb.testing import MongoTestCase
 
 _SETTINGS = {
     'mongo_replicaset': None,
@@ -67,6 +66,7 @@ _SETTINGS = {
     'session.secret': '123456',
     'idp_url': 'http://example.com/idp',
     }
+
 
 class DummyActionPlugin(ActionPlugin):
 
@@ -109,7 +109,7 @@ class DummyActionPlugin2(DummyActionPlugin):
     _steps = 2
 
 
-class FunctionalTestCase(unittest.TestCase):
+class FunctionalTestCase(MongoTestCase):
     """TestCase with an embedded MongoDB temporary instance.
 
     Each test runs on a temporary instance of MongoDB. The instance will
@@ -120,24 +120,17 @@ class FunctionalTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        super(FunctionalTestCase, self).setUp()
-        try:
-            self.tmp_db = MongoTemporaryInstance.get_instance()
-        except OSError:
-            raise unittest.SkipTest("requires accessible mongod executable")
-        self.conn = self.tmp_db.conn
-        self.port = self.tmp_db.port
-
-        for db_name in self.conn.database_names():
-            self.conn.drop_database(db_name)
 
         settings = copy.deepcopy(_SETTINGS)
-        settings['mongo_uri'] = self.tmp_db.get_uri('eduid_actions_test')
 
         if getattr(self, 'settings', None) is None:
             self.settings = settings
         else:
             self.settings.update(settings)
+
+        super(FunctionalTestCase, self).setUp(celery, get_attribute_manager)
+
+        settings['mongo_uri'] = self.tmp_db.get_uri('eduid_actions_test')
 
         app = main({}, **self.settings)
 
