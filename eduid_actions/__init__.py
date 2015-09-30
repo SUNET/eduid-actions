@@ -109,7 +109,7 @@ def includeme(config):
 
     config.set_request_property(lambda x: x.registry.settings['actions_db'],
             'actions_db', reify=True)
-    amdb = UserDB(settings['mongo_uri_am'], settings['mongo_name_am'])
+    amdb = UserDB(settings['mongo_uri'], 'eduid_am')   # XXX hard-coded name of old userdb. How will we transition?
 
     config.registry.settings['amdb'] = amdb
 
@@ -180,8 +180,6 @@ def main(global_config, **settings):
 
     for item in (
         'mongo_uri',
-        'mongo_uri_am',
-        'mongo_name_am',
         'site.name',
         'auth_shared_secret',
     ):

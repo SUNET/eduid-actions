@@ -32,26 +32,40 @@
 
 __author__ = 'eperez'
 
-import time
-import atexit
-import random
-import shutil
-import tempfile
-import unittest
-import subprocess
-import os
-import pymongo
+import copy
 
 from webtest import TestApp
 from mock import patch
-
-from eduid_userdb.testing import MongoTemporaryInstance, MongoTestCase
 
 from eduid_actions import main
 from eduid_actions import views
 from eduid_actions.action_abc import ActionPlugin
 
 from eduid_am.celery import celery, get_attribute_manager
+from eduid_userdb.testing import MongoTestCase
+
+_SETTINGS = {
+    'mongo_replicaset': None,
+    'site.name': 'Test Site',
+    'auth_shared_secret': '123123',
+    'testing': True,
+    'pyramid.includes': '''
+                pyramid_jinja2
+                pyramid_beaker
+                ''',
+    'jinja2.directories': 'eduid_actions:templates',
+    'jinja2.undefined': 'strict',
+    'jinja2.i18n.domain': 'eduid-actions',
+    'jinja2.filters': """
+                route_url = pyramid_jinja2.filters:route_url_filter
+                static_url = pyramid_jinja2.filters:static_url_filter
+                """,
+    'session.type': 'memory',
+    'session.key': 'session',
+    'session.lock_dir': '/tmp',
+    'session.secret': '123456',
+    'idp_url': 'http://example.com/idp',
+    }
 
 
 class DummyActionPlugin(ActionPlugin):
@@ -105,45 +119,26 @@ class FunctionalTestCase(MongoTestCase):
     A test can access the port using the attribute `port`
     """
 
-    def setUp(self, extra_settings, extra_dbs):
-        self.tmp_db = MongoTemporaryInstance.get_instance()
-        self.conn = self.tmp_db.conn
-        self.port = self.tmp_db.port
+    def setUp(self):
 
-        self.settings = {
-            'mongo_replicaset': None,
-            'mongo_uri': self.tmp_db.get_uri('eduid_actions_test'),
-            'mongo_uri_am': self.tmp_db.get_uri('eduid_am_test'),
-            'mongo_name_am': 'eduid_am_test',
-            'site.name': 'Test Site',
-            'auth_shared_secret': '123123',
-            'testing': True,
-            'pyramid.includes': '''
-                pyramid_jinja2
-                pyramid_beaker
-                ''',
-            'jinja2.directories': 'eduid_actions:templates',
-            'jinja2.undefined': 'strict',
-            'jinja2.i18n.domain': 'eduid-actions',
-            'jinja2.filters': """
-                route_url = pyramid_jinja2.filters:route_url_filter
-                static_url = pyramid_jinja2.filters:static_url_filter
-                """,
-            'session.type': 'memory',
-            'session.key': 'session',
-            'session.lock_dir': '/tmp',
-            'session.secret': '123456',
-            'idp_url': 'http://example.com/idp',
-        }
-        self.settings.update(extra_settings)
-        for key, name in extra_dbs:
-            self.settings[key] = self.tmp_db.get_uri(name)
+        settings = copy.deepcopy(_SETTINGS)
+
+        if getattr(self, 'settings', None) is None:
+            self.settings = settings
+        else:
+            self.settings.update(settings)
+
         super(FunctionalTestCase, self).setUp(celery, get_attribute_manager)
+
+        settings['mongo_uri'] = self.tmp_db.get_uri('eduid_actions_test')
+
         app = main({}, **self.settings)
-        self.testapp = TestApp(app)
+
         self.actions_db = app.registry.settings['actions_db']
-        app = self.testapp.app
         self.actions_db._drop_whole_collection()
+
+        self.testapp = TestApp(app)
+        app = self.testapp.app
         app.registry.settings['action_plugins']['dummy'] = DummyActionPlugin1
         app.registry.settings['action_plugins']['dummy2'] = DummyActionPlugin1
         app.registry.settings['action_plugins']['dummy_2steps'] = DummyActionPlugin2
