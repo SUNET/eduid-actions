@@ -102,8 +102,7 @@ def jinja2_settings(settings):
 def includeme(config):
     # DB setup
     settings = config.registry.settings
-    mongo_replicaset = settings.get('mongo_replicaset', None)
-    actions_db = ActionDB(settings['mongo_uri'], replicaSet=mongo_replicaset)
+    actions_db = ActionDB(settings['mongo_uri'])
 
     config.registry.settings['actions_db'] = actions_db
 
