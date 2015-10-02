@@ -20,7 +20,7 @@ else:
         'update_catalog': babel.update_catalog
     }
 
-version = '0.0.1b0'
+version = '0.0.1b1'
 
 requires = [
     'pymongo>=2.8,<3',
