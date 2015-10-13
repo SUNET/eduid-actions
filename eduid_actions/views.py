@@ -215,7 +215,9 @@ class PerformAction(object):
         if action is None:
             logger.info("Finished pre-login actions "
                         "for userid: {0}".format(userid))
-            raise HTTPFound(location=settings['idp_url'])
+            idp_url = '{0}?key={1}'.format(settings['idp_url'],
+                                           self.request.session['idp_session'])
+            raise HTTPFound(location=idp_url)
 
         if action.action_type not in settings['action_plugins']:
             logger.info("Missing plugin for action {0}".format(action.action_type))
