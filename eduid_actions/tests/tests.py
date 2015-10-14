@@ -73,7 +73,7 @@ class ActionTests(FunctionalTestCase):
         self.assertEqual(res.location, 'http://localhost/perform-action')
         res = self.testapp.get(res.location)
         self.assertEqual(res.status, '302 Found')
-        self.assertEqual(res.location, self.settings['idp_url'])
+        self.assertTrue(res.location.startswith(self.settings['idp_url']))
 
     def test_action_2steps_success(self):
         action = deepcopy(DUMMY_ACTION)
@@ -99,7 +99,7 @@ class ActionTests(FunctionalTestCase):
         self.assertEqual(res.location, 'http://localhost/perform-action')
         res = self.testapp.get(res.location)
         self.assertEqual(res.status, '302 Found')
-        self.assertEqual(res.location, self.settings['idp_url'])
+        self.assertTrue(res.location.startswith(self.settings['idp_url']))
 
     def test_two_actions_success(self):
         self.actions_db.add_action(data=DUMMY_ACTION)
@@ -217,7 +217,7 @@ class ActionTests(FunctionalTestCase):
         self.assertEqual(res.location, 'http://localhost/perform-action')
         res = self.testapp.get(res.location)
         self.assertEqual(res.status, '302 Found')
-        self.assertEqual(res.location, self.settings['idp_url'])
+        self.assertTrue(res.location.startswith(self.settings['idp_url']))
         self.assertEqual(self.actions_db.db_count(), 0)
 
     def test_action_success_with_session(self):
@@ -239,7 +239,7 @@ class ActionTests(FunctionalTestCase):
         self.assertEqual(res.location, 'http://localhost/perform-action')
         res = self.testapp.get(res.location)
         self.assertEqual(res.status, '302 Found')
-        self.assertEqual(res.location, self.settings['idp_url'])
+        self.assertTrue(res.location.startswith(self.settings['idp_url']))
 
     def test_action_with_different_session(self):
         fail_action = deepcopy(DUMMY_ACTION)
@@ -255,7 +255,7 @@ class ActionTests(FunctionalTestCase):
         self.assertEqual(res.location, 'http://localhost/perform-action')
         res = self.testapp.get(res.location)
         self.assertEqual(res.status, '302 Found')
-        self.assertEqual(res.location, self.settings['idp_url'])
+        self.assertTrue(res.location.startswith(self.settings['idp_url']))
         self.assertEqual(self.actions_db.db_count(), 1)
 
     def test_action_with_no_session_in_url(self):
@@ -272,7 +272,7 @@ class ActionTests(FunctionalTestCase):
         self.assertEqual(res.location, 'http://localhost/perform-action')
         res = self.testapp.get(res.location)
         self.assertEqual(res.status, '302 Found')
-        self.assertEqual(res.location, self.settings['idp_url'])
+        self.assertTrue(res.location.startswith(self.settings['idp_url']))
         self.assertEqual(self.actions_db.db_count(), 1)
 
     def test_two_actions_one_with_session(self):
@@ -298,7 +298,7 @@ class ActionTests(FunctionalTestCase):
         self.assertEqual(res.location, 'http://localhost/perform-action')
         res = self.testapp.get(res.location)
         self.assertEqual(res.status, '302 Found')
-        self.assertEqual(res.location, self.settings['idp_url'])
+        self.assertTrue(res.location.startswith(self.settings['idp_url']))
         self.assertEqual(self.actions_db.db_count(), 1)
 
     def test_two_actions_with_different_session(self):
@@ -324,7 +324,7 @@ class ActionTests(FunctionalTestCase):
         self.assertEqual(res.location, 'http://localhost/perform-action')
         res = self.testapp.get(res.location)
         self.assertEqual(res.status, '302 Found')
-        self.assertEqual(res.location, self.settings['idp_url'])
+        self.assertTrue(res.location.startswith(self.settings['idp_url']))
         self.assertEqual(self.actions_db.db_count(), 1)
 
     def test_two_actions_with_same_session(self):
