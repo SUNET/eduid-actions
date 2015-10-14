@@ -54,15 +54,6 @@ label {
     color:#6d6d6d;
     font-family:'Roboto-Regular';
 }
-input,
-#input-code-verify,
-#input-email-register {
-    width:100%;
-    height:60px;
-    padding:0 20px;
-    border-radius: 0;
-    box-shadow: none;
-}
 input:focus {
     outline:0;
 }
@@ -77,127 +68,17 @@ input:focus {
   padding: 20px 35px 0; }
 
 .header .container {
-    padding: 0; }
-.header ul {
-    margin: 0; }
+    padding: 0;
+}
 .header .logo {
     float: left;
-    margin: 0; }
-.header nav li {
-    list-style: none;
-    margin: 0 30px;
-    line-height: 40px; }
-.header nav li.current-menu-item a {
-      color: #fff;
-      border-bottom: 3px solid #fff; }
-.header nav li.button {
-      float: right;
-      height: 40px;
-      padding-top: 0;
-      padding-bottom: 0;
-      margin: 0 10px; }
-.header nav li.button a {
-        color: #fff;
-        line-height: 32px; }
-.header nav li a {
-      line-height: 20px; }
-.header nav li ul {
-      display: none; }
-.header nav a {
-    font-family: 'Roboto-Medium';
-    font-size: 14px;
-    text-transform: uppercase; 
-    color:#3f5c57;
-  }
-.header nav a:hover {
-      color: #fff; 
-        text-decoration:none;}
-.header .buttons {
-    float: right; }
-.header .buttons .button {
-      float: left;
-      height: 40px;
-      padding-top: 0;
-      padding-bottom: 0;
-      margin: 0 10px; 
-      border:4px solid transparent;
-    }
-
-.header .buttons .button.log-out {
-        background-color:#747474;
-        border-color:#747474;
-    }
-.header .buttons .button.orange {
-        background:#dd650e;
-        border-color:#dd650e;
-    }
-.header .buttons .button.white-border {
-        background: transparent;
-        border-color: #fff; }
-.header .buttons a {
-      color: #fff;
-      line-height: 32px; }
+    margin: 0;
+}
 
 .logo {
     width: 145px;
     height: 50px;
     background: url(../img/sprite.png) 1px 0 no-repeat;
-}
-
-#code-verify-lg .form-group,
-#email-register-lg .form-group {
-    margin:0;
-}
-#code-verify-lg .input-group,
-#email-register-lg .input-group {
-    display:block;
-    text-align:center;
-}
-#email-register-lg .input-group input,
-#code-verify-lg .input-group input {
-    display:inline-block;
-    max-width:320px;
-    float:none;
-    vertical-align:top;
-    border-color:#fff;
-    box-shadow:none;
-}
-#email-register-lg .input-group-btn,
-#code-verify-lg .input-group-btn {
-    display:inline-block;
-    float:none;
-}
-#email-register-lg .form-group, 
-#email-register-lg .input-group,
-#code-verify-lg .form-group, 
-#code-verify-lg .input-group {
-    width:100%;
-    margin-top:0;
-    margin-bottom:0;
-}
-#email-register-lg input,
-#code-verify-lg input {
-    height:60px;
-    border-radius: 0;
-    padding: 0 20px;
-}
-
-#email-register,
-#code-verify,
-#social-register {
-    float:none;
-}
-#email-register,
-#code-verify{
-    margin: 20px auto 0;
-}
-#social-register {
-    margin:30px auto 0;
-    max-width: 550px;
-}
-
-div.modal-content > div.modal-header > h3 {
-    color: #fff;
 }
 
 /* Footer */
@@ -227,62 +108,6 @@ div#footer span.langselector {
     color:#000;
 }
 
-/* Help */
-
-.jumbotron.eduid-help .panel-body,
-.jumbotron.eduid-help p {
-    font-size: 16px;
-    color: #222;
-}
-
-.jumbotron.eduid-help .panel-heading a {
-    font-size: 18px;
-}
-
-.jumbotron.eduid-help > h2,
-.jumbotron.eduid-error > h2,
-.jumbotron.eduid-notfound > h2,
-.jumbotron.eduid-success > h2 {
-    font-size: 40px;
-}
-
-/* Success */
-
-.jumbotron.eduid-success,
-.jumbotron.eduid-fetched-info {
-    padding-bottom: 0px;
-}
-
-.jumbotron.eduid-success > h2,
-.row.success-instructions h2,
-.row.success-instructions p {
-    text-align: center;
-}
-
-.row.success-instructions p {
-    padding-bottom: 40px;
-}
-
-.row.success-instructions h2 {
-    font-size: 40px;
-}
-
-.jumbotron.eduid-account-created {
-    padding-bottom: 30px;
-}
-
-/* review fetched info */
-
-div.eduid-fetched-info-form .form-control {
-    height: 60px;
-    border-radius: 0px;
-    padding: 20px;
-}
-
-div.eduid-fetched-info-form {
-    vertical-align: middle;
-}
-
 /* Buttons
     -------------------------------------------------------------------------------------- */
 
@@ -301,59 +126,8 @@ div.eduid-fetched-info-form {
     text-transform:uppercase;
     margin-bottom:10px;
 }
-.modal-footer .btn {
-    margin-bottom: 0px;
-}
 .btn:hover {
     text-decoration:none;
-}
-
-.btn-google,
-.btn-google:hover,
-.btn-facebook,
-.btn-facebook:hover,
-.btn-liveconnect,
-.btn-liveconnect:hover {
-    background-color: #58b78c;
-    border-color: #58b78c;
-}
-.btn-facebook .btn-icon {
-    background-image: url(../img/sprite.png);
-    background-repeat: no-repeat;
-    background-position: -42px -48px;
-}
-.btn-google .btn-icon {
-    background-image: url(../img/sprite.png);
-    background-repeat: no-repeat;
-    background-position: -81px -48px;
-    position: relative;
-    left: -11px;
-}
-.btn-google .btn-text {
-    position: relative;
-    left: -10px;
-}
-.btn-google,
-.btn-facebook,
-.btn-liveconnect   {
-    width:335px;
-    height: 60px;
-    line-height: 60px;
-    border-radius: 0;
-    padding: 0 30px 0 20px;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    background-color: #58b78c;
-    border-color: #58b78c;
-}
-.btn-google .btn-text,
-.btn-facebook  .btn-text,
-.btn-liveconnect  .btn-text {
-    color:#fff;
-}
-.btn-social,
-.btn-social:hover {
-    color:#000;
 }
 
 .btn-primary,
@@ -380,39 +154,6 @@ button[type=submit].btn {
     border-left:0;
     padding-left:0;
 }
-div#instructions_div .btn-success {
-    margin-left:0px!important;
-}
-
-form.form-inline div.input-group p.help-block {
-    text-align: center;
-}
-
-.row.eduid-resend-code .btn {
-    display: inline-block;
-}
-
-/* ReCaptcha */
-
-div#eduid-captcha {
-    text-align: center;
-}
-
-div#eduid-captcha-inner {
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 320px;
-}
-
-div#recaptcha_widget_div {
-    margin-top: -100px;
-    margin-bottom: 50px;
-}
-div#recaptcha_widget_div input#recaptcha_response_field {
-    height: 30px;
-    padding-left: 4px !important;
-}
-
 /* Fontface */
 @font-face {
 	font-family: 'Roboto-Light';
@@ -460,22 +201,6 @@ div#recaptcha_widget_div input#recaptcha_response_field {
 	font-weight: normal;
 	font-style: normal;
 }
-
-@media only screen and (min-width: 1280px) {
-    
-    .header nav li {
-        margin:0 20px;
-    }
-
-}
-
-@media only screen and (min-width: 1024px) and (max-width: 1279px) {
-    
-    .header nav li {
-        margin:0 16px;
-    }
-
-}
 @media only screen and (min-width: 960px) and (max-width: 1023px) {
     .header {
         padding-left:23px;
@@ -490,30 +215,10 @@ div#recaptcha_widget_div input#recaptcha_response_field {
         height: 33px;
         background-size: 100px;
     }
-    .header nav li {
-        margin:0 13px;
-    }
-    .header nav li.button {
-        padding:0 20px;
-    }
-    .header nav li a {
-        font-size:14px;
-    }
 
     .buttons .button a {
         font-size:14px;
         padding:25px;
-    }
-
-    .btn-social {
-        width:335px;
-    }
-    .btn-facebook {
-        margin-left: 4px;
-    }
-    #email-register-lg input,
-    #code-verify-lg input {
-        margin-bottom:10px;
     }
     .input-group-btn .btn {
         margin-left:0!important;
@@ -533,26 +238,6 @@ div#recaptcha_widget_div input#recaptcha_response_field {
         width: 80px;
         height: 26px;
         background-size: 80px;
-    }
-    .header nav li {
-        margin:0 10px;
-    }
-    .header nav li.button {
-        padding:0 20px;
-    }
-    .header .buttons .button {
-        margin:0 5px;
-    }
-    .buttons .button a {
-        font-size:12px;
-        padding:20px;
-    }
-    .btn-facebook {
-        margin-left: 4px;
-    } 
-    #email-register-lg input,
-    #code-verify-lg input {
-        margin-bottom:10px;
     }
     
 }
@@ -615,34 +300,11 @@ div#recaptcha_widget_div input#recaptcha_response_field {
         padding:0;
         font-size:13px
     }
-    .btn-facebook .btn-text,
-    .btn-text {
-        border-right:0;
-        padding-right:0;
-        margin-right:0;
-    }
-    .btn-google,
-    .btn-facebook,
-    .btn-liveconnect {
-        padding:0;
-        max-width:285px;
-    }
     /* Footer */
     #footer,
     .footer {
         padding:20px 0;
         height:auto;
-    }
-
-    .modal-footer .btn-success {
-        margin-top:20px;
-    }
-    div#eduid-modal-buttons {
-        text-align: center;
-    }
-    div#eduid-modal-buttons a {
-        margin-left: auto;
-        margin-left: auto;
     }
 
     /* Pages */
@@ -651,139 +313,35 @@ div#recaptcha_widget_div input#recaptcha_response_field {
         width:100%;
     }
 
-    nav.navbar.navbar-default#eduid-signup-navbar {
-        background-color: #333;
-        border-color: #333;
-    }
-
     div#eduid-logo-small {
         margin-left: -90px;
         margin-top: -4px;
     } 
-
-    ul.nav.navbar-nav li a {
-        color: #eee;
-        display: block;
-        padding: 10px 0;
-        border-bottom: 1px solid #CCC;
-    }
-
-    ul.nav.navbar-nav li a:hover {
-        color: #aaa;
-    }
-
-    div#eduid-signup-menu > div.buttons.nav {
-        float:none;
-        margin-top: 10px;
-        margin: 7.5px auto;
-        padding: 0 60px;
-        max-width:315px;
-    }
-    div#eduid-signup-menu > div.buttons.nav .button {
-        margin-bottom:10px;
-        text-align:center;
-        padding:0;
-        float:none;
-        height:auto;
-    }
-    div#eduid-signup-menu > div.buttons.nav a {
-        display:block;
-        padding:10px 0;
-        line-height:1em;
-    }
-
-    #eduid-signup-navbar div.navbar-header > span, 
-    #eduid-signup-navbar div.navbar-header > span:before, 
-    #eduid-signup-navbar div.navbar-header > span:after {
-        cursor: pointer;
-        border-radius: 2px;
-        height: 5px;
-        width: 35px;
-        right: 0;
-        background: white;
-        position: absolute;
-        display: block;
-        content: '';
-        border-color: transparent;
-        padding: 0;
-        margin-left: -15px;
-        border: 0;
-
-        -webkit-transition: all 250ms;
-        -moz-transition: all 250ms;
-        -o-transition: all 250ms;
-        transition: all 250ms;
-    }
-    #eduid-signup-navbar div.navbar-header > span {
-        top:10px;
-    }
-    #eduid-signup-navbar div.navbar-header > span:before {
-        top: -10px;
-    }
-    #eduid-signup-navbar div.navbar-header > span:after {
-        bottom: -10px; 
-    }
-    #eduid-signup-navbar div.navbar-header > span.open {
-        background-color: transparent;
-    }
-    #eduid-signup-navbar div.navbar-header > span.open:before {
-        top: 0;
-
-        -webkit-transform: rotate(45deg);
-        -moz-transform: rotate(45deg);
-        -ms-transform: rotate(45deg);
-        -o-transform: rotate(45deg);
-        transform: rotate(45deg);
-    }
-    #eduid-signup-navbar div.navbar-header > span.open:after {
-        bottom:0;
-
-        -webkit-transform: rotate(-45deg);
-        -moz-transform: rotate(-45deg);
-        -ms-transform: rotate(-45deg);
-        -o-transform: rotate(-45deg);
-        transform: rotate(-45deg);
-    }
-
-    /* ReCaptcha */
-
-    div#recaptcha_widget_div {
-        margin-top: 0px;
-        margin-bottom: 30px;
-    }
 }
 @media only screen and (min-width: 768px) {
     .jumbotron p.lead {
         font-size:24px;
     }
-    nav.navbar.navbar-default#eduid-signup-navbar {
-        background-color: transparent;
-        border-color: transparent;
-    }
 
     div#eduid-logo-small {
         display: none;
     }
-    div#eduid-modal-buttons {
-        text-align: center;
-    }
-    div.eduid-modal-button {
-        margin-left: auto;
-        margin-right: auto;
-        text-align: center;
-    }
-    div#eduid-modal-buttons a {
-        margin-left: auto;
-        margin-right: auto;
-    }
 
 }
 
-@media only screen and (max-width: 1279px) {
+/* -----------  ToU  ---------------------- */
 
-    ul.nav.navbar-nav li a {
-        padding-left: 0px;
-        padding-right: 0px;
-    }
-    
+div#tou-form-buttons {
+    width: 100%;
+    text-align: center;
 }
+
+div#tou-form-buttons .input-group {
+    margin: auto;
+}
+
+div#tou-form-buttons .input-group .input-group-btn {
+    padding: 5px;
+}
+
+/* -----------  End ToU  ------------------ */
