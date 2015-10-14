@@ -20,7 +20,7 @@ else:
         'update_catalog': babel.update_catalog
     }
 
-version = '0.0.1b1'
+version = '0.0.1b2'
 
 requires = [
     'pyramid==1.5',
