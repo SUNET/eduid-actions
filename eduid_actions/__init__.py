@@ -108,7 +108,8 @@ def includeme(config):
 
     config.set_request_property(lambda x: x.registry.settings['actions_db'],
             'actions_db', reify=True)
-    amdb = UserDB(settings['mongo_uri'], 'eduid_am')   # XXX hard-coded name of old userdb. How will we transition?
+    mongo_uri = read_setting_from_env(settings, 'mongo_uri')
+    amdb = UserDB(mongo_uri, 'eduid_am')   # XXX hard-coded name of old userdb. How will we transition?
 
     config.registry.settings['amdb'] = amdb
 
@@ -118,6 +119,8 @@ def includeme(config):
     # configure Celery broker
     broker_url = read_setting_from_env(settings, 'broker_url', 'amqp://')
     celery.conf.update(BROKER_URL=broker_url)
+    celery.conf.update(MONGO_URI=mongo_uri)
+    celery.conf.update(CELERY_TASK_SERIALIZER='json')
     settings['celery'] = celery
     settings['broker_url'] = broker_url
 

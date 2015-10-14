@@ -23,7 +23,6 @@ else:
 version = '0.0.1b1'
 
 requires = [
-    'pymongo>=2.8,<3',
     'pyramid==1.5',
     'pyramid_debugtoolbar==2.0.2',
     'pyramid_jinja2==2.1',
