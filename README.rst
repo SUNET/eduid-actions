@@ -16,6 +16,10 @@ IdP, the IdP will redirect the user to the actions app,
 that will let the users perform the required actions, and, upon success,
 redirect the user back to the IdP.
 
+All the logic for each kind of action is provided by a plugin package,
+that can declare a number of setuptools entry points that will be
+described below.
+
 Database
 ========
 
@@ -63,8 +67,8 @@ On the IdP, before the action
    perform any action, querying the eduid_actions db.
 
 2. Examination of the SAML request can result in adding actions to the db.
-   These actions would be specific for the particular request as well as for
-   the principal, so the IdP would create a session identifier and add it
+   These actions may be specific for the particular request as well as for
+   the principal, so the IdP may create a session identifier and add it
    to the document inserted in the eduid_actions db.
 
 3. If any action is needed for the user, the process of issuing a SAML
@@ -95,7 +99,7 @@ The needed action is performed - or not
 7. The actions app, for each of the required actions,
    presents the user with some form, for example, the new terms of use and
    accept/reject buttons. The structure of this app will be explained in
-   detail below, starting on point (9).
+   detail below, starting on point (14).
 
 8. The action may end in success, or not. It
    is responsibility of this app to act upon the user's action. If, for
@@ -136,35 +140,61 @@ The actions App
     sent by the IdP; and second, letting the users perform the required actions.
 
 15. Each action will be defined in a plugin, a package that is accessed through
-    a setuptools entry point. The name of the entry point will match the name of
-    the action in the eduid_actions db, and the callable will return an object
-    with a number of methods. The pyramid app will have a plugins registry, set
-    up during initialization using ``pkg_resources.iter_entry_points``. The API
+    setuptools entry points. These plugins can define 4 different entry points:
+    one for adding new actions, another for acting upon a pending action, and
+    2 others for updating the central user db with any new data that may have
+    been collected when performing the action.
+
+16. For adding new actions, the plugin must be installed in the python
+    environment where the IdP runs. It must declare an entry point named
+    ``eduid_actions.add_actions``, pointing to a callable that accepts as
+    arguments an instance of an IdP application
+    (``eduid_idp.idp:IdPApplication``), a user object
+    (``eduid_userdb.user:User``), and an IdP ticket
+    (``eduid_idp.login.SSOLoginData``).
+
+17. For acting upon a pending action, the plugin must be installed in the
+    python environment where the actions app runs. It must declare an
+    entry point named ``eduid_actions.action``, pointing to a python class
+    with a number of methods. The API
     of the objects returned by the plugins is described in the
     ``eduid_actions.action_abc:ActionPlugin`` abstract base class.
 
-16. Once the app has decided which action needs to be performed next, and has
+18. Once the app has decided which action needs to be performed next, and has
     selected the plugin objetc that corresponds to the action, it has to
     send a form to the user. Since some actions may need more than one step,
     the first method called on the object will be ``get_number_of_steps()``.
-    
-17. Then, for each needed step, the app will call
+
+19. Then, for each needed step, the app will call
     ``get_action_body_for_step(step_number, request)``, that  will return a
     rendered jinja2 template, with the form that represents the step in the
     action that the user has to perform. This html will be
     inserted by the app into the body of a base template, and presented to the
     user.
 
-18. After all steps for a given action have been performed, the actions app
+20. After all steps for a given action have been performed, the actions app
     will call ``perform_action(request)`` on the plugin object, that
     will perform the required action (e.g., add an entry to the
     eduid_consent db).
 
-19. Once the actions app has successfully consumed all required actions,
+21. Once the actions app has successfully consumed all required actions,
     it will return the user to the IdP. If any of them fails, it will inform
     the user that she cannot complete the request: the object provided by the
     plugin will raise an ``ActionError`` exception that will carry a
     localized message that will be shown to the user.
+
+22. If an action has recorded some information that needs to end up in the
+    central user db, the plugin may act as an AM plugin. For this, it must
+    be installed in the python environment where the AM app runs, and it
+    must declare 2 entry points. The first, named ``eduid_am.plugin_init``,
+    must point to a callable that accepts a dictionary with am configuration
+    data, and returns an object that has attributes needed by the attribute
+    fetcher. The second, named ``eduid_am.attribute_fetcher``, must point to
+    a callable that accepts as arguments the object provided by the first
+    entry point and an user id (``bson.ObjectId``), and returns a dictionary
+    ready to use by pymongo to update the user object with the provided id
+    in the central user db.
+    More details about AM plugins in the eduid-am package.
 
 Examples of actions
 ===================
