@@ -6,32 +6,36 @@
     <title>{{ _("Sign up") }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!--[if lt IE 9]>
-    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-    <link href="{{'eduid_actions:static/css/bootstrap-2.3.1.min.css'|static_url}}" rel="stylesheet" media="screen">
+    <link href="{{'eduid_actions:static/css/bootstrap-3.2.0.min.css'|static_url}}" rel="stylesheet" media="screen">
     <link href="{{'eduid_actions:static/css/screen.css'|static_url}}" rel="stylesheet" media="screen">
+    <link href="{{'eduid_actions:static/css/actions.css'|static_url}}" rel="stylesheet" />
   </head>
   <body>
    <div class="container">
-     <div class="masthead">
-       <a href="https://www.eduid.se/"><img src="{{'eduid_actions:static/img/logo_eduID_g_color.svg'|static_url}}" alt="Logotype"/></a>
-       <a href="http://www.sunet.se/" target="_blank">
-           <img src="{{'eduid_actions:static/img/SUNET_badge.png'|static_url}}" alt="SUNET logotype"/>
-       </a>
-     </div>
-     <noscript><div id="no-script"><h3>{{ _("This Site depends on Javascript, so please enable it.") }}</h3></div></noscript>
-     <div id="content-block">  
+      <header id="header" class="header">
+        <div class="logo"></div>
+      </header>
+      <noscript><div id="no-script"><h3>{{ _("This Site depends on Javascript, so please enable it.") }}</h3></div></noscript>
+     <div id="content-block">
+       <div class="messages-wrapper messages-center-block">
+         <div class="messages">
+         {% for message in request.session.pop_flash() %}
+           <div class="alert alert-danger">
+             <button type="button" class="close" data-dismiss="alert">&times;</button>
+                  {{ message }}
+           </div>
+         {% endfor %}
+         </div>
+       </div>
        {% block contents %}
 
        {% endblock %}
      </div>
    </div>
-   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-   <script>window.jQuery || document.write('<script src=\'{{"eduid_actions:static/js/libs/jquery-1.9.1.min.js"|static_url}}\'><\/script>')</script>
-   <script src="{{'eduid_actions:static/js/libs/bootstrap-2.3.1.min.js'|static_url}}"></script>
+   <script src="{{'eduid_actions:static/js/libs/jquery-1.9.1.min.js'|static_url}}"></script>
+   <script src="{{'eduid_actions:static/js/libs/bootstrap-3.2.0.min.js'|static_url}}"></script>
+   <script src="{{'eduid_actions:static/js/mobilemenu.js'|static_url}}"></script>
       
    <div class="clearfix"></div>
       
@@ -53,9 +57,7 @@
         </p>
     </div>
    </div>
-   <script type="text/javascript">
-       $(document).ready(function () {$('div#content-block').show()});
-   </script>
+   <script src="{{'eduid_actions:static/js/base.js'|static_url}}"></script>
 
     {% block extrajs %}
     {% endblock %}

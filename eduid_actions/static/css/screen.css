@@ -1,5 +1,4 @@
-/* No javascript
--------------------------------------------------- */
+/* No javascript */
 div#no-script {
     text-align: center;
     color: #CC3732;
@@ -8,24 +7,69 @@ div#no-script {
 div#content-block {
     display: none;
 }
-/* End no javascript
--------------------------------------------------- */
+/* End no javascript */
 
-/* Header footer styles
--------------------------------------------------- */
 
-.masthead {
-  padding-top: 10px;
-  padding-bottom: 5px;
+/* Main marketing message and sign up button */
+.jumbotron {
+    background-color: #fff;
+    margin-bottom: 0px !important;
+    padding-top: 20px !important;
 }
 
-.masthead img {
-  max-width: 108px;
-  max-height: 110px;
+.jumbotron h1, .jumbotron p.lead {
+    text-align: center;
 }
 
-/* end header footer styles
--------------------------------------------------- */
+@media only screen and (min-width: 992px) {
+
+.jumbotron h1 {
+    font-size: 72px;
+    line-height: 1;
+    font-weight: 800;
+}
+
+}
+
+@media only screen and (max-width: 992px) and (min-width: 768px) {
+
+.jumbotron h1 {
+    font-size: 54px;
+    line-height: 1;
+    font-weight: 600;
+}
+
+}
+
+@media only screen and (max-width: 767px) {
+
+.jumbotron h1 {
+    font-size: 36px;
+    line-height: 1;
+    font-weight: 400;
+}
+
+}
+
+.input-group .help-block {
+    font-size: 14px;
+}
+
+.pre-big {
+    font-size: 150%;
+}
+
+div#footer span.langselector {
+  color: rgb(85, 85, 85);;
+  display: inline-block;
+  height: 14px;
+  line-height: 14px;
+  margin-bottom: 2px;
+  margin-right: 2px;
+  margin-top: 2px;
+  padding: 4px;
+  text-align: left;
+}
 
 /* Bottom footer styles
 -------------------------------------------------- */
@@ -34,78 +78,51 @@ html, body {
   height: 100%;
 }
 
-#wrap {
-  min-height: 100%;
-  height: auto !important;
-  height: 100%;
-  margin: 0 auto -3em;
-}
-
-.push {
-  margin-top: 10px;
-}
-
 #footer {
-}
-
-#footer, .push {
   height: 3em;
 }
-
 
 /* end bottom footer styles
 -------------------------------------------------- */
 
-
-/* Spinner on buttons */
-
-.spinner {
-  display: inline-block;
-  opacity: 0;
-  width: 0;
-
-  -webkit-transition: opacity 0.25s, width 0.25s;
-  -moz-transition: opacity 0.25s, width 0.25s;
-  -o-transition: opacity 0.25s, width 0.25s;
-  transition: opacity 0.25s, width 0.25s;
-}
-
-.has-spinner.loading {
-  opacity: 1;
-}
-
-.has-spinner.loading .spinner {
-  opacity: 1;
-  width: auto; /* This doesn't work, just fix for unkown width elements */
-}
-
-.has-spinner.btn-mini.active .spinner {
-    width: 10px;
-}
-
-.has-spinner.btn-small.active .spinner {
-    width: 13px;
-}
-
-.has-spinner.btn.loading .spinner {
-    width: 16px;
-}
-
-.has-spinner.btn-large.loading .spinner {
-    width: 19px;
-}
-
-/* End of Spinner on buttons
--------------------------------------------------- */
-
 /* Messages */
 
+.messages-center-block {
+    float: none;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media only screen and (max-width: 768px) {
+
 div.messages-wrapper {
-  position:absolute;
+    display: block;
+    position: relative;
+    left: 5px !important;
+}
+
+}
+@media only screen and (min-width: 768px) {
+
+div.messages-wrapper {
+  position:sticky;
   top:70px;
-  left:330px;
-  width:600px;
   height:0px;
 }
 
-/* end of Messages */
+}
+@media only screen and (min-width: 768px) and (max-width: 992px) {
+
+div.messages-wrapper {
+  width:338px;
+}
+
+}
+@media only screen and (min-width: 992px) {
+
+div.messages-wrapper {
+  width:600px;
+}
+
+}
