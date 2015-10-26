@@ -146,14 +146,9 @@ class PerformAction(object):
             html = plugin_obj.get_action_body_for_step(1, action,
                                                        self.request)
         except plugin_obj.ActionError as exc:
-            self._log_aborted(action, session, exc)
+            self._aborted(action, session, exc)
             html = u'<div class="jumbotron"><h2>{0}</h2></div>'
             html = html.format(exc.args[0])
-            if exc.remove_action:
-                aid = action.action_id
-                msg = 'Removing faulty action with id '
-                logger.info(msg + str(aid))
-                self.request.actions_db.remove_action_by_id(aid)
         return render_to_response('main.jinja2',
                                   {'plugin_html': html},
                                   request=self.request)
@@ -168,12 +163,7 @@ class PerformAction(object):
                 plugin_obj.perform_action(action, self.request)
 
             except plugin_obj.ActionError as exc:
-                self._log_aborted(action, session, exc)
-                if exc.remove_action:
-                    aid = action.action_id
-                    msg = 'Removing faulty action with id '
-                    logger.info(msg + str(aid))
-                    self.request.actions_db.remove_action_by_id(aid)
+                self._aborted(action, session, exc)
                 html = u'<h2>{0}</h2>'.format(exc.args[0])
                 return render_to_response('main.jinja2',
                                           {'plugin_html': html},
@@ -203,12 +193,7 @@ class PerformAction(object):
                                                        self.request,
                                                        errors=errors)
         except plugin_obj.ActionError as exc:
-            self._log_aborted(action, session, exc)
-            if exc.remove_action:
-                aid = action.action_id
-                msg = 'Removing faulty action with id '
-                logger.info(msg + str(aid))
-                self.request.actions_db.remove_action_by_id(aid)
+            self._aborted(action, session, exc)
             html = u'<h2>{0}</h2>'.format(exc.args[0])
 
         except plugin_obj.ValidationError as exc:
@@ -245,11 +230,16 @@ class PerformAction(object):
         session['current_plugin'] = plugin_obj
         session['total_steps'] = plugin_obj.get_number_of_steps()
 
-    def _log_aborted(self, action, session, exc):
+    def _aborted(self, action, session, exc):
         logger.info('Aborted pre-login action {0} for userid {1}, '
                     'reason: {2}'.format(action.action_type,
                                          session['userid'],
                                          exc.args[0]))
+        if exc.remove_action:
+            aid = action.action_id
+            msg = 'Removing faulty action with id '
+            logger.info(msg + str(aid))
+            self.request.actions_db.remove_action_by_id(aid)
 
 
 def exception_view(context, request):
