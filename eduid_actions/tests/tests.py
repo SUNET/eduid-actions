@@ -184,7 +184,7 @@ class ActionTests(FunctionalTestCase):
         self.assertEqual(self.actions_db.db_count(), 1)
         res = form.submit('reject')
         self.assertIn('Action not performed', res.body)
-        self.assertEqual(self.actions_db.db_count(), 1)
+        self.assertEqual(self.actions_db.db_count(), 0)
 
     def test_insufficient_params(self):
         self.actions_db.add_action(data=DUMMY_ACTION)
