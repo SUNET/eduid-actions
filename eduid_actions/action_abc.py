@@ -52,7 +52,7 @@ class ActionError(Exception):
           follow_success_code_path(*args2, **kwargs2)
       else:
           msg = _('Failure condition')
-          raise self.ActionError(msg)
+          raise self.ActionError(msg, rm=boolean_value)
     
     Example code, in the actions app (obj is an action object,
     an instance of a class that extends ActionPlugin,
