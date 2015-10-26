@@ -33,6 +33,49 @@ from abc import ABCMeta, abstractmethod
 import gettext
 
 
+class ActionError(Exception):
+    '''
+    exception to be raised if the action to be performed fails,
+    either in `get_action_body_for_step`, or in `perform_action`.
+    Instantiated with a message that informs about the reason for
+    the failure.
+    The message should never carry any sensitive information, since
+    it will besent to the user.
+    
+    The rm kwarg indicates to the actions app whether it should
+    remove the action record from the db when encountering
+    this exception.
+
+    Example code, in the plugin::
+    
+      if test_some_condition(*args, **kwargs):
+          follow_success_code_path(*args2, **kwargs2)
+      else:
+          msg = _('Failure condition')
+          raise self.ActionError(msg)
+    
+    Example code, in the actions app (obj is an action object,
+    an instance of a class that extends ActionPlugin,
+    defined in a plugin, and actions_db is an instance of
+    eduid_userdb.actions.db.ActionsDB)::
+
+      try:
+          obj.perform_action(request)
+      except obj.ActionError as exc:
+          if exc.remove_action:
+              actions_db.remove_action_by_id(action.action_id)
+          failure_msg = exc.args[0]
+          # return a 200 Ok with the failure_msg
+
+    :param arg: the reason for the failure
+    :type arg: unicode
+    '''
+
+    def __init__(self, msg, rm=False):
+        super(ActionError, self).__init__(msg)
+        self.remove_action = rm
+
+
 class ActionPlugin:
     '''
     Abstract class to be extended by the different plugins for the
@@ -56,6 +99,8 @@ class ActionPlugin:
     '''
 
     __metaclass__ = ABCMeta
+
+    ActionError = ActionError
 
     @classmethod
     @abstractmethod
@@ -131,37 +176,6 @@ class ActionPlugin:
         '''
         lang = self.get_language(request)
         return self.get_translations()[lang].ugettext
-
-    class ActionError(Exception):
-        '''
-        exception to be raised if the action to be performed fails,
-        either in `get_action_body_for_step`, or in `perform_action`.
-        Instantiated with a message that informs about the reason for
-        the failure.
-        The message should never carry any sensitive information, since
-        it will besent to the user.
-
-        Example code, in the plugin::
-        
-          if test_some_condition(*args, **kwargs):
-              follow_success_code_path(*args2, **kwargs2)
-          else:
-              msg = _('Failure condition')
-              raise self.ActionError(msg)
-        
-        Example code, in the actions app (obj is an action object,
-        an instance of a class that extends ActionPlugin,
-        defined in a plugin)::
-
-          try:
-              obj.perform_action(request)
-          except obj.ActionError as exc:
-              failure_msg = exc.args[0]
-              # return a 200 Ok with the failure_msg
-
-        :param arg: the reason for the failure
-        :type arg: unicode
-        '''
 
     class ValidationError(Exception):
         '''

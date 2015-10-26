@@ -164,10 +164,14 @@ class PerformAction(object):
 
             except plugin_obj.ActionError as exc:
                 self._log_aborted(action, session, exc)
+                if exc.remove_action:
+                    self.request.actions_db.remove_action_by_id(
+                            action.action_id)
                 html = u'<h2>{0}</h2>'.format(exc.args[0])
                 return render_to_response('main.jinja2',
                                           {'plugin_html': html},
                                           request=self.request)
+
 
             except plugin_obj.ValidationError as exc:
                 errors = exc.args[0]
@@ -194,6 +198,8 @@ class PerformAction(object):
                                                        errors=errors)
         except plugin_obj.ActionError as exc:
             self._log_aborted(action, session, exc)
+            if exc.remove_action:
+                self.request.actions_db.remove_action_by_id(action.action_id)
             html = u'<h2>{0}</h2>'.format(exc.args[0])
 
         except plugin_obj.ValidationError as exc:
