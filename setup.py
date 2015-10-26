@@ -27,7 +27,7 @@ requires = [
     'pyramid_debugtoolbar==2.0.2',
     'pyramid_jinja2==2.1',
     'pyramid_beaker==0.8',
-    'waitress==0.8.9',
+    'waitress>=0.8.9',
     'eduid_am>=0.6.1b0',
     'eduid_userdb>=0.0.4b3',
 ]
