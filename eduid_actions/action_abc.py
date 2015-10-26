@@ -69,6 +69,9 @@ class ActionError(Exception):
 
     :param arg: the reason for the failure
     :type arg: unicode
+    :param rm: whether to remove the action from the db
+               on catching the exception.
+    :type rm: bool
     '''
 
     def __init__(self, msg, rm=False):
