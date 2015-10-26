@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <title>{{ _("Sign up") }}</title>
+    <title>{{ _("eduID Login") }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
@@ -36,13 +36,13 @@
    <script src="{{'eduid_actions:static/js/libs/jquery-1.9.1.min.js'|static_url}}"></script>
    <script src="{{'eduid_actions:static/js/libs/bootstrap-3.2.0.min.js'|static_url}}"></script>
    <script src="{{'eduid_actions:static/js/mobilemenu.js'|static_url}}"></script>
-      
+
    <div class="clearfix"></div>
-      
+
    <div id="footer">
     <div class="container">
         <p>
-            &copy; SUNET 2013-2014
+            &copy; SUNET 2013-2015
             <span class="pull-right">
             {% for lang, label in request.registry.settings.get('available_languages', {}).items() %}
                 <span class="langselector">
