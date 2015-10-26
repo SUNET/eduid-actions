@@ -94,7 +94,7 @@ class DummyActionPlugin(ActionPlugin):
         if action.params.get('perform_failure', False):
             raise self.ActionError(u'Perform failure')
         elif request.POST.get('reject', False):
-            raise self.ActionError(u'Action not performed')
+            raise self.ActionError(u'Action not performed', rm=True)
         else:
             return
 
