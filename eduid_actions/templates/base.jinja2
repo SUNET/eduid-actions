@@ -49,7 +49,7 @@
                     {% if request.locale == lang %}
                         <span>{{ label }}</span>
                     {% else %}
-                        <a href="{{ request.route_path('set_language')}}?lang={{lang}}">{{ label }}</a>
+                        <a href="{{ request.route_url('set_language')}}?lang={{lang}}">{{ label }}</a>
                     {% endif %}
                 </span>
             {% endfor %}
