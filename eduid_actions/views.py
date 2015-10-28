@@ -66,7 +66,7 @@ def set_language(context, request):
 
     url = request.environ.get('HTTP_REFERER', None)
     if url is None:
-        url = request.route_path('actions')
+        url = request.route_url('actions')
     response = HTTPFound(location=url)
 
     cookie_domain = settings.get('lang_cookie_domain', None)
@@ -106,7 +106,7 @@ def actions(request):
         idp_session = request.GET.get('session', None)
         request.session['idp_session'] = idp_session
         request.actions_db.clean_cache(userid, idp_session)
-        return HTTPFound(location='/perform-action')
+        return HTTPFound(location=request.route_url('perform-action'))
     else:
         logger.info("Token authentication failed (userid: {0})".format(userid))
         # Show and error, the user can't be logged
@@ -183,7 +183,8 @@ class PerformAction(object):
                 logger.info('Finished pre-login action {0} '
                             'for userid {1}'.format(action.action_type,
                                                     session['userid']))
-                return HTTPFound(location='/perform-action')
+                url = self.request.route_url('perform-action')
+                return HTTPFound(location=url)
 
         next_step = session['current_step'] + 1
         session['current_step'] = next_step
