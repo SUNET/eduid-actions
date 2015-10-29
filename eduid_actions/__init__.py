@@ -78,8 +78,8 @@ class PluginsRegistry(dict):
 class ConfiguredHostStaticURLInfo(StaticURLInfo):
 
     def generate(self, path, request, **kw):
-        host = request.registry.settings.get('static_assets_host_override', None)
-        kw.update({'_host': host})
+        _app_url = request.registry.settings.get('static_assets_app_url')
+        kw.update({'_app_url': _app_url})
         return super(ConfiguredHostStaticURLInfo, self).generate(path,
                                                                  request,
                                                                  **kw)
