@@ -78,8 +78,8 @@ class PluginsRegistry(dict):
 class ConfiguredHostStaticURLInfo(StaticURLInfo):
 
     def generate(self, path, request, **kw):
-        host = request.registry.settings.get('static_assets_host_override', None)
-        kw.update({'_host': host})
+        _app_url = request.registry.settings.get('static_assets_app_url')
+        kw.update({'_app_url': _app_url})
         return super(ConfiguredHostStaticURLInfo, self).generate(path,
                                                                  request,
                                                                  **kw)
@@ -228,7 +228,8 @@ def main(global_config, **settings):
                                         'eduid_actions:locale')
     config.add_translation_dirs(locale_path)
 
-    config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_static_view('js', 'js', cache_max_age=3600)
+    config.add_static_view('css', 'css', cache_max_age=3600)
     config.add_route('set_language', '/set_language/')
 
     # eudid specific configuration
