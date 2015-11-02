@@ -228,7 +228,8 @@ def main(global_config, **settings):
                                         'eduid_actions:locale')
     config.add_translation_dirs(locale_path)
 
-    config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_static_view('js', 'js', cache_max_age=3600)
+    config.add_static_view('css', 'css', cache_max_age=3600)
     config.add_route('set_language', '/set_language/')
 
     # eudid specific configuration
