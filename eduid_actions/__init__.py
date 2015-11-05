@@ -75,16 +75,6 @@ class PluginsRegistry(dict):
                                                       entry_point.name)
 
 
-class ConfiguredHostStaticURLInfo(StaticURLInfo):
-
-    def generate(self, path, request, **kw):
-        _app_url = request.registry.settings.get('static_assets_app_url')
-        kw.update({'_app_url': _app_url})
-        return super(ConfiguredHostStaticURLInfo, self).generate(path,
-                                                                 request,
-                                                                 **kw)
-
-
 def jinja2_settings(settings):
     settings.setdefault('jinja2.i18n.domain', 'eduid-actions')
     settings.setdefault('jinja2.newstyle', True)
@@ -217,9 +207,6 @@ def main(global_config, **settings):
                           root_factory=RootFactory,
                           locale_negotiator=locale_negotiator)
 
-    config.registry.registerUtility(ConfiguredHostStaticURLInfo(),
-                                    IStaticURLInfo)
-
     config.set_session_factory(session_factory)
 
     config.set_request_property(get_locale_name, 'locale', reify=True)
@@ -228,8 +215,15 @@ def main(global_config, **settings):
                                         'eduid_actions:locale')
     config.add_translation_dirs(locale_path)
 
-    config.add_static_view('js', 'static/js', cache_max_age=3600)
-    config.add_static_view('css', 'static/css', cache_max_age=3600)
+    if settings.get('js_url', False):
+        config.add_static_view(settings['js_url'], 'eduid_actions:static/js')
+    else:
+        config.add_static_view('js', 'eduid_actions:static/js', cache_max_age=3600)
+    if settings.get('css_url', False):
+        config.add_static_view(settings['css_url'], 'eduid_actions:static/css')
+    else:
+        config.add_static_view('css', 'eduid_actions:static/css', cache_max_age=3600)
+
     config.add_route('set_language', '/set_language/')
 
     # eudid specific configuration
