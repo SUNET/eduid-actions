@@ -41,8 +41,6 @@ from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationError
 from pyramid.i18n import get_locale_name
 from pyramid_beaker import session_factory_from_settings
-from pyramid.interfaces import IStaticURLInfo
-from pyramid.config.views import StaticURLInfo
 
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPForbidden, HTTPBadRequest
