@@ -216,7 +216,7 @@ def main(global_config, **settings):
     if settings.get('static_url', False):
         config.add_static_view(settings['static_url'], 'static')
     else:
-        config.add_static_view('static', 'eduid_actions:static', cache_max_age=3600)
+        config.add_static_view('static', 'static', cache_max_age=3600)
 
     config.add_route('set_language', '/set_language/')
 
