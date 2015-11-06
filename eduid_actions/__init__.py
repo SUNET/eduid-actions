@@ -215,22 +215,10 @@ def main(global_config, **settings):
                                         'eduid_actions:locale')
     config.add_translation_dirs(locale_path)
 
-    if settings.get('js_url', False):
-        config.add_static_view(settings['js_url'], 'eduid_actions:static/js')
+    if settings.get('static_url', False):
+        config.add_static_view(settings['static_url'], 'static')
     else:
-        config.add_static_view('js', 'eduid_actions:static/js', cache_max_age=3600)
-    if settings.get('css_url', False):
-        config.add_static_view(settings['css_url'], 'eduid_actions:static/css')
-    else:
-        config.add_static_view('css', 'eduid_actions:static/css', cache_max_age=3600)
-    if settings.get('img_url', False):
-        config.add_static_view(settings['img_url'], 'eduid_actions:static/img')
-    else:
-        config.add_static_view('img', 'eduid_actions:static/img', cache_max_age=3600)
-    if settings.get('fonts_url', False):
-        config.add_static_view(settings['fonts_url'], 'eduid_actions:static/fonts')
-    else:
-        config.add_static_view('fonts', 'eduid_actions:static/fonts', cache_max_age=3600)
+        config.add_static_view('static', 'eduid_actions:static', cache_max_age=3600)
 
     config.add_route('set_language', '/set_language/')
 
