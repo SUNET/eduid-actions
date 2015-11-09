@@ -41,8 +41,6 @@ from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationError
 from pyramid.i18n import get_locale_name
 from pyramid_beaker import session_factory_from_settings
-from pyramid.interfaces import IStaticURLInfo
-from pyramid.config.views import StaticURLInfo
 
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPForbidden, HTTPBadRequest
@@ -73,16 +71,6 @@ class PluginsRegistry(dict):
                 locale_path = resource_filename(package_name, 'locale')
                 self[entry_point.name].init_languages(settings, locale_path,
                                                       entry_point.name)
-
-
-class ConfiguredHostStaticURLInfo(StaticURLInfo):
-
-    def generate(self, path, request, **kw):
-        _app_url = request.registry.settings.get('static_assets_app_url')
-        kw.update({'_app_url': _app_url})
-        return super(ConfiguredHostStaticURLInfo, self).generate(path,
-                                                                 request,
-                                                                 **kw)
 
 
 def jinja2_settings(settings):
@@ -217,9 +205,6 @@ def main(global_config, **settings):
                           root_factory=RootFactory,
                           locale_negotiator=locale_negotiator)
 
-    config.registry.registerUtility(ConfiguredHostStaticURLInfo(),
-                                    IStaticURLInfo)
-
     config.set_session_factory(session_factory)
 
     config.set_request_property(get_locale_name, 'locale', reify=True)
@@ -228,8 +213,11 @@ def main(global_config, **settings):
                                         'eduid_actions:locale')
     config.add_translation_dirs(locale_path)
 
-    config.add_static_view('js', 'js', cache_max_age=3600)
-    config.add_static_view('css', 'css', cache_max_age=3600)
+    if settings.get('static_url', False):
+        config.add_static_view(settings['static_url'], 'static')
+    else:
+        config.add_static_view('static', 'static', cache_max_age=3600)
+
     config.add_route('set_language', '/set_language/')
 
     # eudid specific configuration
