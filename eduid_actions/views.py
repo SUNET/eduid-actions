@@ -31,7 +31,6 @@
 #
 
 import os.path
-from bson import ObjectId
 
 from pyramid.view import view_config
 from pyramid.response import FileResponse
@@ -184,6 +183,7 @@ class PerformAction(object):
                             'for userid {1}'.format(action.action_type,
                                                     session['userid']))
                 url = self.request.route_url('perform-action')
+                logger.debug('Redirecting user {0} to {1}'.format(session['userid'], url))
                 return HTTPFound(location=url)
 
         next_step = session['current_step'] + 1
