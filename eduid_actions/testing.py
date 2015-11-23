@@ -119,14 +119,16 @@ class FunctionalTestCase(MongoTestCase):
     A test can access the port using the attribute `port`
     """
 
-    def setUp(self):
+    def setUp(self, settings=None):
 
-        settings = copy.deepcopy(_SETTINGS)
+        new_settings = copy.deepcopy(_SETTINGS)
+        if new_settings is not None:
+            new_settings.update(settings)
 
         if getattr(self, 'settings', None) is None:
-            self.settings = settings
+            self.settings = new_settings
         else:
-            self.settings.update(settings)
+            self.settings.update(new_settings)
 
         super(FunctionalTestCase, self).setUp(celery, get_attribute_manager)
 
