@@ -10,37 +10,42 @@
     <link href="{{'eduid_actions:static/css/bootstrap-3.2.0.min.css'|static_url}}" rel="stylesheet" media="screen">
     <link href="{{'eduid_actions:static/css/screen.css'|static_url}}" rel="stylesheet" media="screen">
     <link href="{{'eduid_actions:static/css/actions.css'|static_url}}" rel="stylesheet" />
+    <script src="{{'eduid_actions:static/js/libs/jquery-1.9.1.min.js'|static_url}}"></script>
+    <script src="{{'eduid_actions:static/js/libs/bootstrap-3.2.0.min.js'|static_url}}"></script>
+    <script src="{{'eduid_actions:static/js/actions-mobilemenu.js'|static_url}}"></script>
+    <script src="{{'eduid_actions:static/js/actions-base.js'|static_url}}"></script>
   </head>
   <body>
-   <div class="container-fluid">
+   <div class="wrap container">
       <header id="header" class="header">
         <div class="logo"></div>
       </header>
-      <noscript><div id="no-script"><h3>{{ _("This Site depends on Javascript, so please enable it.") }}</h3></div></noscript>
-     <div id="content-block">
-       <div class="messages-wrapper messages-center-block{% if request.session.peek_flash %} messages-wrapper-empty{% endif %}">
-         <div class="messages">
-         {% for message in request.session.pop_flash() %}
-           <div class="alert alert-danger">
-             <button type="button" class="close" data-dismiss="alert">&times;</button>
+
+      <div class="container position-relative">
+
+          <noscript><div id="no-script"><h3>{{ _("This Site depends on Javascript, so please enable it.") }}</h3></div></noscript>
+          <div id="content-block">
+            <div class="messages-wrapper messages-center-block{% if request.session.peek_flash %} messages-wrapper-empty{% endif %}">
+              <div class="messages">
+              {% for message in request.session.pop_flash() %}
+                <div class="alert alert-danger">
+                  <button type="button" class="close" data-dismiss="alert">&times;</button>
                   {{ message }}
-           </div>
-         {% endfor %}
-         </div>
-       </div>
-       {% block contents %}
+                </div>
+              {% endfor %}
+              </div>
+            </div>
+            {% block contents %}
 
-       {% endblock %}
-     </div>
-   </div>
-   <script src="{{'eduid_actions:static/js/libs/jquery-1.9.1.min.js'|static_url}}"></script>
-   <script src="{{'eduid_actions:static/js/libs/bootstrap-3.2.0.min.js'|static_url}}"></script>
-   <script src="{{'eduid_actions:static/js/actions-mobilemenu.js'|static_url}}"></script>
+            {% endblock %}
+          </div>
+      </div>
+    </div>
 
-   <div class="clearfix"></div>
+    <div class="clearfix"></div>
 
-   <div id="footer">
-    <div class="container">
+    <div id="footer">
+      <div class="container">
         <p>
             &copy; SUNET 2013-2015
             <span class="pull-right">
@@ -57,7 +62,6 @@
         </p>
     </div>
    </div>
-   <script src="{{'eduid_actions:static/js/actions-base.js'|static_url}}"></script>
 
     {% block extrajs %}
     {% endblock %}
