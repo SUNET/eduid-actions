@@ -29,7 +29,7 @@ requires = [
     'pyramid_beaker==0.8',
     'waitress>=0.8.9',
     'eduid_am>=0.6.1',
-    'eduid_userdb>=0.0.4b3',
+    'eduid_userdb>=0.0.5',
 ]
 
 if sys.version_info[0] < 3:
