@@ -122,7 +122,7 @@ class FunctionalTestCase(MongoTestCase):
     def setUp(self, settings=None):
 
         new_settings = copy.deepcopy(_SETTINGS)
-        if new_settings is not None:
+        if settings is not None:
             new_settings.update(settings)
 
         if getattr(self, 'settings', None) is None:
@@ -132,7 +132,7 @@ class FunctionalTestCase(MongoTestCase):
 
         super(FunctionalTestCase, self).setUp(celery, get_attribute_manager)
 
-        settings['mongo_uri'] = self.tmp_db.get_uri('eduid_actions_test')
+        self.settings['mongo_uri'] = self.tmp_db.get_uri('eduid_actions_test')
 
         app = main({}, **self.settings)
 
