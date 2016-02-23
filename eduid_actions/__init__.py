@@ -29,7 +29,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
-import os
+
 import re
 
 import logging
@@ -50,7 +50,7 @@ from pyramid.httpexceptions import HTTPInternalServerError
 from eduid_userdb.actions import ActionDB
 from eduid_userdb.userdb import UserDB
 from eduid_am.celery import celery
-from eduid_am.config import read_setting_from_env, read_mapping
+from eduid_common.config.parsers import IniConfigParser
 from eduid_actions.i18n import locale_negotiator
 from eduid_actions.context import RootFactory
 
@@ -88,6 +88,9 @@ def jinja2_settings(settings):
 
 
 def includeme(config):
+    # Config parser
+    cp = IniConfigParser('')  # Init without config file as it is already loaded
+
     # DB setup
     settings = config.registry.settings
     actions_db = ActionDB(settings['mongo_uri'])
@@ -95,20 +98,24 @@ def includeme(config):
     config.registry.settings['actions_db'] = actions_db
 
     config.set_request_property(lambda x: x.registry.settings['actions_db'],
-            'actions_db', reify=True)
-    mongo_uri = read_setting_from_env(settings, 'mongo_uri')
+                                'actions_db', reify=True)
+    mongo_uri = cp.read_setting_from_env(settings, 'mongo_uri')
     amdb = UserDB(mongo_uri, 'eduid_am')   # XXX hard-coded name of old userdb. How will we transition?
 
     config.registry.settings['amdb'] = amdb
 
     config.set_request_property(lambda x: x.registry.settings['amdb'],
-            'amdb', reify=True)
+                                'amdb', reify=True)
 
     # configure Celery broker
-    broker_url = read_setting_from_env(settings, 'broker_url', 'amqp://')
-    celery.conf.update(BROKER_URL=broker_url)
-    celery.conf.update(MONGO_URI=mongo_uri)
-    celery.conf.update(CELERY_TASK_SERIALIZER='json')
+    broker_url = cp.read_setting_from_env(settings, 'broker_url', 'amqp://')
+    celery_conf = {
+        'BROKER_URL': broker_url,
+        'MONGO_URI': mongo_uri,
+        'CELERY_TASK_SERIALIZER': 'json',
+        'CELERY_RESULT_BACKEND': 'amqp',
+    }
+    celery.conf.update(celery_conf)
     settings['celery'] = celery
     settings['broker_url'] = broker_url
 
@@ -155,31 +162,33 @@ def main(global_config, **settings):
     """
     settings = dict(settings)
 
+    cp = IniConfigParser('')  # Init without config file as it is already loaded
+
     # Parse settings before creating the configurator object
-    available_languages = read_mapping(settings, 'available_languages',
-                                       default={'en': 'English',
-                                                'sv': 'Svenska'})
+    available_languages = cp.read_mapping(settings, 'available_languages',
+                                          default={'en': 'English',
+                                                   'sv': 'Svenska'})
 
-    settings['lang_cookie_domain'] = read_setting_from_env(settings,
-                                                           'lang_cookie_domain',
-                                                           None)
+    settings['lang_cookie_domain'] = cp.read_setting_from_env(settings,
+                                                              'lang_cookie_domain',
+                                                              None)
 
-    settings['lang_cookie_name'] = read_setting_from_env(settings,
-                                                         'lang_cookie_name',
-                                                         'lang')
+    settings['lang_cookie_name'] = cp.read_setting_from_env(settings,
+                                                            'lang_cookie_name',
+                                                            'lang')
 
     for item in (
         'mongo_uri',
         'site.name',
         'auth_shared_secret',
     ):
-        settings[item] = read_setting_from_env(settings, item, None)
+        settings[item] = cp.read_setting_from_env(settings, item, None)
         if settings[item] is None:
             raise ConfigurationError(
                 'The {0} configuration option is required'.format(item))
 
-    mongo_replicaset = read_setting_from_env(settings, 'mongo_replicaset',
-                                             None)
+    mongo_replicaset = cp.read_setting_from_env(settings, 'mongo_replicaset',
+                                                None)
     if mongo_replicaset is not None:
         settings['mongo_replicaset'] = mongo_replicaset
 
@@ -209,8 +218,8 @@ def main(global_config, **settings):
 
     config.set_request_property(get_locale_name, 'locale', reify=True)
 
-    locale_path = read_setting_from_env(settings, 'locale_dirs',
-                                        'eduid_actions:locale')
+    locale_path = cp.read_setting_from_env(settings, 'locale_dirs',
+                                           'eduid_actions:locale')
     config.add_translation_dirs(locale_path)
 
     if settings.get('static_url', False):
