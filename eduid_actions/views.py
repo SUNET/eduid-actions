@@ -146,7 +146,7 @@ class PerformAction(object):
                                                        self.request)
         except plugin_obj.ActionError as exc:
             self._aborted(action, session, exc)
-            html = u'<div class="jumbotron"><h2>{0}</h2></div>'
+            html = u'<div class="jumbotron"><p>{0}</p></div>'
             html = html.format(exc.args[0])
         return render_to_response('main.jinja2',
                                   {'plugin_html': html},
@@ -163,7 +163,8 @@ class PerformAction(object):
 
             except plugin_obj.ActionError as exc:
                 self._aborted(action, session, exc)
-                html = u'<h2>{0}</h2>'.format(exc.args[0])
+                html = u'<div class="jumbotron"><p>{0}</p></div>'
+                html = html.format(exc.args[0])
                 return render_to_response('main.jinja2',
                                           {'plugin_html': html},
                                           request=self.request)
@@ -195,7 +196,8 @@ class PerformAction(object):
                                                        errors=errors)
         except plugin_obj.ActionError as exc:
             self._aborted(action, session, exc)
-            html = u'<h2>{0}</h2>'.format(exc.args[0])
+            html = u'<div class="jumbotron"><p>{0}</p></div>'
+            html = html.format(exc.args[0])
 
         except plugin_obj.ValidationError as exc:
             errors = exc.args[0]
