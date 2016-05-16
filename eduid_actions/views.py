@@ -232,10 +232,10 @@ class PerformAction(object):
         session['total_steps'] = plugin_obj.get_number_of_steps()
 
     def _aborted(self, action, session, exc):
-        logger.info('Aborted pre-login action {0} for userid {1}, '
-                    'reason: {2}'.format(action.action_type,
-                                         session['userid'],
-                                         exc.args[0]))
+        logger.info(u'Aborted pre-login action {0} for userid {1}, '
+                    u'reason: {2}'.format(action.action_type,
+                                          session['userid'],
+                                          exc.args[0]))
         if exc.remove_action:
             aid = action.action_id
             msg = 'Removing faulty action with id '
