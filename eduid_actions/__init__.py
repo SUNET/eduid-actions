@@ -40,7 +40,6 @@ from pkg_resources import iter_entry_points
 from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationError
 from pyramid.i18n import get_locale_name
-from pyramid_beaker import session_factory_from_settings
 
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPForbidden, HTTPBadRequest
@@ -53,6 +52,7 @@ from eduid_am.celery import celery
 from eduid_common.config.parsers import IniConfigParser
 from eduid_actions.i18n import locale_negotiator
 from eduid_actions.context import RootFactory
+from eduid_actions.session import SessionFactory
 
 
 log = logging.getLogger('eduid_actions')
@@ -209,11 +209,11 @@ def main(global_config, **settings):
 
     jinja2_settings(settings)
 
-    session_factory = session_factory_from_settings(settings)
     config = Configurator(settings=settings,
                           root_factory=RootFactory,
                           locale_negotiator=locale_negotiator)
 
+    session_factory = SessionFactory(settings)
     config.set_session_factory(session_factory)
 
     config.set_request_property(get_locale_name, 'locale', reify=True)
