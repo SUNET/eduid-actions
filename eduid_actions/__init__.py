@@ -40,7 +40,6 @@ from pkg_resources import iter_entry_points
 from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationError
 from pyramid.i18n import get_locale_name
-from pyramid_beaker import session_factory_from_settings
 
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPForbidden, HTTPBadRequest
