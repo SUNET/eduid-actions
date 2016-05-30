@@ -35,11 +35,7 @@ __author__ = 'eperez'
 import copy
 
 from mock import patch
-from webtest import TestApp, TestRequest
-
-from pyramid.interfaces import ISessionFactory
-from pyramid.security import remember
-from pyramid.testing import DummyRequest
+from webtest import TestApp
 
 from eduid_actions import main
 from eduid_actions import views
