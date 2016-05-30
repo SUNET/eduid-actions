@@ -84,7 +84,7 @@ class ToUActionTests(FunctionalTestCase):
         self.assertEquals(self.actions_db.db_count(), 1)
         res3 = form.submit('reject')
         self.assertEquals(self.actions_db.db_count(), 1)
-        self.assertIn('you must accept the new terms of use '
+        self.assertIn('You must accept the new terms of use '
                       'to continue logging in', res3.body)
 
     def test_misconfigured_tou(self):

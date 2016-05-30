@@ -34,8 +34,12 @@ __author__ = 'eperez'
 
 import copy
 
-from webtest import TestApp
 from mock import patch
+from webtest import TestApp, TestRequest
+
+from pyramid.interfaces import ISessionFactory
+from pyramid.security import remember
+from pyramid.testing import DummyRequest
 
 from eduid_actions import main
 from eduid_actions import views
@@ -44,6 +48,9 @@ from eduid_actions.action_abc import ActionPlugin
 from eduid_am.celery import celery, get_attribute_manager
 from eduid_userdb.testing import MongoTestCase
 from eduid_common.api.testing import RedisTemporaryInstance
+
+from logging import getLogger
+logger = getLogger(__name__)
 
 _SETTINGS = {
     'mongo_replicaset': None,

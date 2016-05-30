@@ -42,6 +42,8 @@ from pyramid.httpexceptions import HTTPForbidden, HTTPBadRequest
 from pyramid.httpexceptions import HTTPMethodNotAllowed
 from pyramid.httpexceptions import HTTPInternalServerError
 
+from eduid_userdb.actions import Action
+
 from eduid_actions.auth import verify_auth_token
 from eduid_actions.i18n import TranslationString as _
 
@@ -136,8 +138,10 @@ class PerformAction(object):
     def get(self):
         self.get_next_action()
         session = self.request.session
-        plugin_obj = session['current_plugin']
-        action = session['current_action']
+        settings = self.request.registry.settings
+        action_type = session['current_plugin']
+        plugin_obj = settings['action_plugins'][action_type]()
+        action = Action(data=session['current_action'])
         logger.info('Starting pre-login action {0} '
                     'for userid {1}'.format(action.action_type,
                                             session['userid']))
@@ -154,8 +158,10 @@ class PerformAction(object):
 
     def post(self):
         session = self.request.session
-        plugin_obj = session['current_plugin']
-        action = session['current_action']
+        settings = self.request.registry.settings
+        action_type = session['current_plugin']
+        plugin_obj = settings['action_plugins'][action_type]()
+        action = Action(data=session['current_action'])
         errors = {}
         if session['total_steps'] == session['current_step']:
             try:
@@ -227,10 +233,13 @@ class PerformAction(object):
             logger.info("Missing plugin for action {0}".format(action.action_type))
             raise HTTPInternalServerError()
 
-        session['current_action'] = action
+        action_dict = action.to_dict()
+        action_dict['_id'] = str(action_dict['_id'])
+        action_dict['user_oid'] = str(action_dict['user_oid'])
+        session['current_action'] = action_dict
         session['current_step'] = 1
+        session['current_plugin'] = action.action_type
         plugin_obj = settings['action_plugins'][action.action_type]()
-        session['current_plugin'] = plugin_obj
         session['total_steps'] = plugin_obj.get_number_of_steps()
 
     def _aborted(self, action, session, exc):
