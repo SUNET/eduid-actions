@@ -213,6 +213,21 @@ def main(global_config, **settings):
                           root_factory=RootFactory,
                           locale_negotiator=locale_negotiator)
 
+    settings['REDIS_HOST'] = cp.read_setting_from_env(settings, 'redis_host',
+                                                      'redis.docker')
+
+    settings['REDIS_PORT'] = int(cp.read_setting_from_env(settings, 'redis_port',
+                                                          6379))
+
+    settings['REDIS_DB'] = int(cp.read_setting_from_env(settings, 'redis_db', 0))
+
+    settings['REDIS_SENTINEL_HOSTS'] = cp.read_list(
+        settings,
+        'redis_sentinel_hosts',
+        default=[])
+    settings['REDIS_SENTINEL_SERVICE_NAME'] = cp.read_setting_from_env(settings, 'redis_sentinel_service_name',
+                                                                       'redis-cluster')
+
     session_factory = SessionFactory(settings)
     config.set_session_factory(session_factory)
 
