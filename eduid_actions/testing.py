@@ -34,8 +34,8 @@ __author__ = 'eperez'
 
 import copy
 
-from webtest import TestApp
 from mock import patch
+from webtest import TestApp
 
 from eduid_actions import main
 from eduid_actions import views
@@ -43,6 +43,10 @@ from eduid_actions.action_abc import ActionPlugin
 
 from eduid_am.celery import celery, get_attribute_manager
 from eduid_userdb.testing import MongoTestCase
+from eduid_common.api.testing import RedisTemporaryInstance
+
+from logging import getLogger
+logger = getLogger(__name__)
 
 _SETTINGS = {
     'mongo_replicaset': None,
@@ -64,6 +68,7 @@ _SETTINGS = {
     'session.key': 'session',
     'session.lock_dir': '/tmp',
     'session.secret': '123456',
+    'session.cookie_max_age': 3600,
     'idp_url': 'http://example.com/idp',
     }
 
@@ -131,6 +136,10 @@ class FunctionalTestCase(MongoTestCase):
         super(FunctionalTestCase, self).setUp(celery, get_attribute_manager)
 
         settings['mongo_uri'] = self.tmp_db.get_uri('eduid_actions_test')
+        self.redis_instance = RedisTemporaryInstance.get_instance()
+        self.settings['REDIS_HOST'] = 'localhost'
+        self.settings['REDIS_PORT'] = self.redis_instance._port
+        self.settings['REDIS_DB'] = '0'
 
         app = main({}, **self.settings)
 
