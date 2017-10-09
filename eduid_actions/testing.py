@@ -88,7 +88,7 @@ class DummyActionPlugin(ActionPlugin):
         if action.params.get('body_failure', False):
             raise self.ActionError(u'Body failure')
         else:
-            return u'''
+            return None, u'''
                        <h1>Dummy action</h1>
                        <form id="dummy" method="POST" action="#">
                            <input type="submit" name="submit" value="submit">
