@@ -146,8 +146,10 @@ class PerformAction(object):
                     'for userid {1}'.format(action.action_type,
                                             session['userid']))
         try:
-            html = plugin_obj.get_action_body_for_step(1, action,
-                                                       self.request)
+            template, data = plugin_obj.get_action_body_for_step(1, action, self.request)
+            if template is not None:
+                return render_to_response(template, data, request = self.request)
+            html = data
         except plugin_obj.ActionError as exc:
             self._aborted(action, session, exc)
             html = u'<div class="jumbotron"><p>{0}</p></div>'
@@ -196,10 +198,13 @@ class PerformAction(object):
         next_step = session['current_step'] + 1
         session['current_step'] = next_step
         try:
-            html = plugin_obj.get_action_body_for_step(next_step,
-                                                       action,
-                                                       self.request,
-                                                       errors=errors)
+            template, data = plugin_obj.get_action_body_for_step(next_step,
+                                                                 action,
+                                                                 self.request,
+                                                                 errors=errors)
+            if template is not None:
+                return render_to_response(template, data, request = self.request)
+            html = data
         except plugin_obj.ActionError as exc:
             self._aborted(action, session, exc)
             html = u'<div class="jumbotron"><p>{0}</p></div>'
@@ -207,10 +212,13 @@ class PerformAction(object):
 
         except plugin_obj.ValidationError as exc:
             errors = exc.args[0]
-            html = plugin_obj.get_action_body_for_step(next_step,
-                                                       action,
-                                                       self.request,
-                                                       errors=errors)
+            template, data = plugin_obj.get_action_body_for_step(next_step,
+                                                                 action,
+                                                                 self.request,
+                                                                 errors=errors)
+            if template is not None:
+                return render_to_response(template, data, request = self.request)
+            html = data
 
         return render_to_response('main.jinja2',
                                   {'plugin_html': html},

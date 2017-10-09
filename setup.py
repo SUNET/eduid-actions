@@ -10,7 +10,7 @@ CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 try:
     from babel.messages import frontend as babel
 except ImportError:
-    print "Babel is not installed, you can't localize this package"
+    print("Babel is not installed, you can't localize this package")
     cmdclass = {}
 else:
     cmdclass = {
@@ -20,7 +20,7 @@ else:
         'update_catalog': babel.update_catalog
     }
 
-version = '0.0.2b2'
+version = '0.1.0'
 
 requires = [
     'pyramid==1.5',

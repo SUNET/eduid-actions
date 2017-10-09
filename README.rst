@@ -161,7 +161,7 @@ The actions App
     ``eduid_actions.action_abc:ActionPlugin`` abstract base class.
 
 18. Once the app has decided which action needs to be performed next, and has
-    selected the plugin objetc that corresponds to the action, it has to
+    selected the plugin object that corresponds to the action, it has to
     send a form to the user. Since some actions may need more than one step,
     the first method called on the object will be ``get_number_of_steps()``.
 
