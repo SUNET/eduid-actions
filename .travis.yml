@@ -1,0 +1,23 @@
+sudo: required
+addons:
+  apt:
+    packages:
+      libffi-dev
+      libssl-dev
+language: python
+python:
+  - "2.7"
+# Have Travis CI start mongodb and redis for us
+services:
+  - docker
+before_install:
+  - docker pull docker.sunet.se/eduid/redis:latest
+  - docker pull docker.sunet.se/eduid/mongodb:latest
+# command to install dependencies
+install:
+  - pip install -U setuptools
+  - python setup.py develop
+  - pip install nosexcover WebTest==2.0.18
+# command to run tests
+script:
+  - nosetests
