@@ -23,6 +23,7 @@ else:
 version = '0.1.1b0'
 
 requires = [
+    'six >= 1.11.0',
     'pyramid==1.5',
     'pyramid_debugtoolbar==2.0.2',
     'pyramid_jinja2==2.1',
