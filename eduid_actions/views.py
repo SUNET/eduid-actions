@@ -106,7 +106,6 @@ def actions(request):
         request.session['userid'] = userid
         idp_session = request.GET.get('session', None)
         request.session['idp_session'] = idp_session
-        request.actions_db.clean_cache(userid, idp_session)
         return HTTPFound(location=request.route_url('perform-action'))
     else:
         logger.info("Token authentication failed (userid: {0})".format(userid))
@@ -167,8 +166,7 @@ class PerformAction(object):
         errors = {}
         if session['total_steps'] == session['current_step']:
             try:
-                plugin_obj.perform_action(action, self.request)
-
+                updated = plugin_obj.perform_action(action, self.request)
             except plugin_obj.ActionError as exc:
                 self._aborted(action, session, exc)
                 html = u'<div class="jumbotron"><p>{0}</p></div>'
@@ -187,7 +185,12 @@ class PerformAction(object):
                 session['current_step'] -= 1
 
             else:
-                self.request.actions_db.remove_action_by_id(action.action_id)
+                if updated:
+                    logger.debug('Updating action {}'.format(updated))
+                    self.request.actions_db.update_action(updated)
+                else:
+                    logger.debug('Removing completed action {}'.format(action))
+                    self.request.actions_db.remove_action_by_id(action.action_id)
                 logger.info('Finished pre-login action {0} '
                             'for userid {1}'.format(action.action_type,
                                                     session['userid']))
