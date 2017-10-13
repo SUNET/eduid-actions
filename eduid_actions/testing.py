@@ -70,6 +70,9 @@ _SETTINGS = {
     'session.secret': '123456',
     'session.cookie_max_age': 3600,
     'idp_url': 'http://example.com/idp',
+
+    'u2f_app_id': 'https://unit-testing.example.com',
+    'u2f_valid_facets': ['https://unit-testing.example.com'],
     }
 
 
