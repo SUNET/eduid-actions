@@ -167,7 +167,5 @@ class FunctionalTestCase(MongoTestCase):
     def tearDown(self):
         super(FunctionalTestCase, self).tearDown()
         self.actions_db._drop_whole_collection()
-        for db_name in self.conn.database_names():
-            self.conn.drop_database(db_name)
         self.testapp.reset()
         self.patcher.stop()
