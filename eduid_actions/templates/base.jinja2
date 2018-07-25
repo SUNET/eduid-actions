@@ -42,14 +42,14 @@
    <div id="footer">
     <div class="container">
         <p>
-            &copy; SUNET 2013-2017
+            &copy; SUNET 2013-2018
             <span class="pull-right">
             {% for lang, label in request.registry.settings.get('available_languages', {}).items() %}
                 <span class="langselector">
                     {% if request.locale == lang %}
                         <span>{{ label }}</span>
                     {% else %}
-                        <a href="{{ request.route_url('set_language')}}?lang={{lang}}">{{ label }}</a>
+                        <a href="{{ request.route_path('set_language')}}?lang={{lang}}">{{ label }}</a>
                     {% endif %}
                 </span>
             {% endfor %}
