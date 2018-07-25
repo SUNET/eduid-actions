@@ -1,0 +1,9 @@
+python_module: eduid_actions
+python_source_directory: eduid_actions
+publish_over_ssh:
+  - pypi.sunet.se
+upstream:
+  - eduid-userdb
+slack:
+  room: eduid-builds
+clean_workspace: true
